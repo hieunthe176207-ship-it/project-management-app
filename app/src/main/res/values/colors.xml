@@ -1,0 +1,40 @@
+<resources>
+    <!-- Primary (xanh dương dùng cho FAB, chip được chọn, icon/tint khi selected) -->
+    <color name="md_primary">#0177FF</color>
+    <color name="md_onPrimary">#FFFFFF</color>
+    <color name="md_primaryContainer">#E8F2FF</color>
+    <color name="md_onPrimaryContainer">#0A2E66</color>
+
+    <!-- Secondary (không bắt buộc, để cho state khác/nhẹ hơn primary) -->
+    <color name="md_secondary">#5BA8FF</color>
+    <color name="md_onSecondary">#FFFFFF</color>
+    <color name="md_secondaryContainer">#EAF3FF</color>
+    <color name="md_onSecondaryContainer">#0C2447</color>
+
+    <!-- Nền & bề mặt -->
+    <color name="md_background">#FFFFFF</color>      <!-- nền xanh rất nhạt (giống mockup) -->
+    <color name="md_onBackground">#0F172A</color>    <!-- text chính, gần đen xanh -->
+    <color name="md_surface">#FFFFFF</color>         <!-- card trắng -->
+    <color name="md_onSurface">#0F172A</color>       <!-- text trên card -->
+
+    <!-- Biến thể bề mặt & outline (viền input, chip unselected, divider) -->
+    <color name="md_surfaceVariant">#F0F3FA</color>
+    <color name="md_onSurfaceVariant">#475569</color> <!-- subtext / nhãn phụ -->
+    <color name="md_outline">#E2E6F0</color>
+
+    <!-- Trạng thái -->
+    <color name="md_error">#B3261E</color>
+    <color name="md_onError">#FFFFFF</color>
+
+    <!-- Accent icon vàng (task icon) -->
+    <color name="accent_yellow">#FFCD04</color>
+    <color name="on_accent_yellow">#FFFFFF</color>
+
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <!-- Shadow mô phỏng (layer-list) -->
+    <color name="shadowColor">#1A0F172A</color>
+    <color name="chip_deadline_bg">#FAF2F2</color>
+
+
+</resources>

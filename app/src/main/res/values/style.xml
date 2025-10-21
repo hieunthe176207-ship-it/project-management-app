@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ShapeAppearanceOnlyBottomRounded" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">0dp</item>
+        <item name="cornerSizeTopRight">0dp</item>
+        <item name="cornerSizeBottomLeft">28dp</item>
+        <item name="cornerSizeBottomRight">28dp</item>
+    </style>
+
+    <style name="MyPopupMenuStyle" parent="Widget.Material3.PopupMenu">
+        <item name="android:background">#FFFFFF</item> <!-- nền trắng -->
+        <item name="android:listDivider">@drawable/menu_divider</item> <!-- gạch -->
+    </style>
+</resources>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true"
+    app:cardBackgroundColor="@color/white">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Phần nền trên -->
+        <ImageView
+            android:id="@+id/imageBackground"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/bg"
+          />
+        <!-- Phần nội dung -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Trend Tag Mobile App"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="@color/black"
+                   />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDeadline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Deadline 12 Okt 2023"
+                    android:textColor="#FF3B30"
+                    app:chipCornerRadius="20dp"
+                    app:chipBackgroundColor="@color/chip_deadline_bg"
+                    app:chipMinHeight="28dp"
+                    app:ensureMinTouchTargetSize="false"
+                    app:closeIconEnabled="false"
+                    app:textStartPadding="12dp"
+                    app:textEndPadding="12dp" />
+            </LinearLayout>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="65/100"
+                android:textColor="@android:color/white"
+                app:chipCornerRadius="20dp"
+                app:chipBackgroundColor="@color/md_primary"
+                app:chipStrokeWidth="0dp"
+                app:chipMinHeight="25dp"
+                app:chipStartPadding="10dp"
+                app:chipEndPadding="10dp"
+                app:ensureMinTouchTargetSize="false"
+                app:closeIconEnabled="false"
+                app:iconStartPadding="0dp"
+                app:textStartPadding="8dp"
+                app:textEndPadding="8dp" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
