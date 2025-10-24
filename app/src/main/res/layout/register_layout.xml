@@ -107,6 +107,7 @@
             android:paddingTop="14dp"
             android:paddingBottom="14dp"
             android:inputType="textPassword"
+            android:textColor="@color/black"
             android:imeOptions="actionNext"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -137,6 +138,7 @@
             android:layout_height="wrap_content"
             android:paddingTop="14dp"
             android:paddingBottom="14dp"
+            android:textColor="@color/black"
             android:inputType="textPassword"
             android:imeOptions="actionDone"
             android:textSize="16sp" />

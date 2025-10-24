@@ -13,16 +13,82 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
+        android:background="@color/white"
         android:layout_height="wrap_content">
 
         <!-- Phần nền trên -->
-        <ImageView
-            android:id="@+id/imageBackground"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/bg"
-          />
+            android:layout_height="wrap_content"
+            >
+            <ImageView
+                android:id="@+id/imageBackground"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/bg"
+                />
+
+            <LinearLayout
+                android:id="@+id/memberGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="10dp"
+                android:clipToPadding="false"
+                android:clipChildren="false">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/memberAvatar1"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/avatar"/>
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/memberAvatar2"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_marginStart="-8dp"
+                    android:src="@drawable/avatar"/>
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/memberAvatar3"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_marginStart="-8dp"
+                    android:src="@drawable/avatar"/>
+
+                <FrameLayout
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_marginStart="-8dp">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/memberAvatar4"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/avatar"/>
+
+                    <View
+                        android:id="@+id/overlayCount"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/oval_mask"/>
+
+                    <TextView
+                        android:id="@+id/membersCount"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="+5"
+                        android:gravity="center"
+                        android:textColor="@android:color/white"
+                        android:textStyle="bold"
+                        android:textSize="12sp"/>
+                </FrameLayout>
+            </LinearLayout>
+        </FrameLayout>
+
         <!-- Phần nội dung -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -45,7 +111,7 @@
                     android:textStyle="bold"
                     android:textSize="16sp"
                     android:textColor="@color/black"
-                   />
+                    />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipDeadline"
@@ -55,10 +121,12 @@
                     android:textColor="#FF3B30"
                     app:chipCornerRadius="20dp"
                     app:chipBackgroundColor="@color/chip_deadline_bg"
-                    app:chipMinHeight="28dp"
+                    app:chipMinHeight="20dp"
+                    android:textSize="12sp"
                     app:ensureMinTouchTargetSize="false"
                     app:closeIconEnabled="false"
                     app:textStartPadding="12dp"
+                    android:layout_marginTop="5dp"
                     app:textEndPadding="12dp" />
             </LinearLayout>
 

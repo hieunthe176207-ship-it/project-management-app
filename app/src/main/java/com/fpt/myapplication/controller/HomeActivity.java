@@ -47,6 +47,10 @@ public class HomeActivity extends AppCompatActivity {
                         model.createApi(body, new ProjectModel.CreateProjectCallBack() {
                             @Override
                             public void onSuccess(ResponseSuccess data) {
+                                Bundle result = new Bundle();
+                                result.putBoolean("created", true);
+                                getSupportFragmentManager().setFragmentResult("add_project_result", result);
+
                                 new SweetAlertDialog(HomeActivity.this, SweetAlertDialog.SUCCESS_TYPE)
                                         .setTitleText("Thông báo")
                                         .setContentText(data.getMessage())

@@ -93,6 +93,7 @@ public class RegisterActivity extends AppCompatActivity {
             tilConfirm.setError("Mật khẩu nhập lại không khớp");
             ok = false;
         }
+        
 
         return ok;
     }

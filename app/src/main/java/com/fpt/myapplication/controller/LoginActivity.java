@@ -2,6 +2,7 @@ package com.fpt.myapplication.controller;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -23,7 +24,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputLayout  tilEmail, tilPassword ;
     private TextInputEditText  etEmail, etPassword ;
     private MaterialButton button;
-
+    private TextView tvRegister;
     private AuthModel authModel;
 
 
@@ -41,9 +42,18 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
 
         button = findViewById(R.id.btnLogin);
+
+        tvRegister = findViewById(R.id.tvRegister);
+
         addClearErrorOnTextChange(tilEmail, etEmail);
         addClearErrorOnTextChange(tilPassword, etPassword);
 
+
+
+        tvRegister.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        });
         button.setOnClickListener(v -> {
             if(validateForm()){
                 String email = getText(etEmail);

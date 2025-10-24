@@ -10,9 +10,13 @@ import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.response.UserResponse;
 import com.fpt.myapplication.util.Util;
 
+import java.util.List;
+
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.http.Multipart;
 
 public class UserModel {
     private final String TAG = "UserApi";
@@ -20,6 +24,12 @@ public class UserModel {
 
 
     public interface GetAccountCallBack{
+        void onLoading();
+        void onSuccess(UserResponse response);
+        void onError(ResponseError error);
+    }
+
+    public interface UpdateAccountCallBack{
         void onLoading();
         void onSuccess(UserResponse response);
         void onError(ResponseError error);
@@ -47,6 +57,31 @@ public class UserModel {
             @Override
             public void onFailure(Call<ResponseSuccess<UserResponse>> call, Throwable throwable) {
                 Log.e(TAG, "onFailure: "+ throwable );
+            }
+        });
+    }
+
+
+
+    public void updateAccount(List<MultipartBody.Part> parts, UpdateAccountCallBack cb){
+        cb.onLoading();
+
+        userApi.updateAccount(parts).enqueue(new Callback<ResponseSuccess<UserResponse>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<UserResponse>> call, Response<ResponseSuccess<UserResponse>> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess<UserResponse> data = response.body();
+                    cb.onSuccess(data.getData());
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<UserResponse>> call, Throwable throwable) {
+
             }
         });
     }

@@ -19,7 +19,7 @@
 
     <!-- Biến thể bề mặt & outline (viền input, chip unselected, divider) -->
     <color name="md_surfaceVariant">#F0F3FA</color>
-    <color name="md_onSurfaceVariant">#475569</color> <!-- subtext / nhãn phụ -->
+    <color name="md_onSurfaceVariant">#555E6B</color> <!-- subtext / nhãn phụ -->
     <color name="md_outline">#E2E6F0</color>
 
     <!-- Trạng thái -->
