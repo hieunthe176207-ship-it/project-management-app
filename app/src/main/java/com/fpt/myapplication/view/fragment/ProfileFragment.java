@@ -83,7 +83,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         imgAvatar = view.findViewById(R.id.imgAvatar);
         tvTitle = view.findViewById(R.id.tvTitle);
         etEmail = view.findViewById(R.id.etEmail);
@@ -92,9 +91,6 @@ public class ProfileFragment extends Fragment {
         btnSave = view.findViewById(R.id.btnSave);
         userModel = new UserModel(requireContext());
         UserResponse user = SessionPrefs.get(requireContext()).getUser();
-
-
-
 
         if (user != null) {
             tvTitle.setText("Profile: " + user.getDisplayName());
@@ -114,16 +110,13 @@ public class ProfileFragment extends Fragment {
             String name = etDisplayName.getText() != null ? etDisplayName.getText().toString().trim() : "";
             if (selectedAvatarUri != null) {
                 try {
-                    parts.add(FileUtil.uriToPart(selectedAvatarUri, requireContext()));
+                    parts.add(FileUtil.uriToPart( "avatar" ,selectedAvatarUri, requireContext()));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
-            RequestBody nameBody = RequestBody.create(
-                    name,
-                    MediaType.parse("text/plain")
-            );
-            parts.add(MultipartBody.Part.createFormData("displayName", null, nameBody));
+            MultipartBody.Part namePart = FileUtil.stringToPart(name, "displayName");
+            parts.add(namePart);
             userModel.updateAccount(parts, new UserModel.UpdateAccountCallBack() {
                 @Override
                 public void onLoading() {

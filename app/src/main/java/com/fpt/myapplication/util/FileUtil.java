@@ -14,14 +14,22 @@ import okhttp3.RequestBody;
 
 public class FileUtil {
     private static final String BASE_URL = "http://10.0.2.2:8080";
-    public static MultipartBody.Part uriToPart(Uri uri, Context ctx) throws IOException {
+    public static MultipartBody.Part uriToPart(String key, Uri uri, Context ctx) throws IOException {
         ContentResolver resolver = ctx.getContentResolver();
         String mime = resolver.getType(uri);            // VD: image/jpeg
         InputStream is = resolver.openInputStream(uri);
         byte[] bytes = readAllBytes(is);                // function bên dưới
 
         RequestBody reqFile = RequestBody.create(bytes, MediaType.parse(mime));
-        return MultipartBody.Part.createFormData("avatar", "avatar.jpg", reqFile);
+        return MultipartBody.Part.createFormData(key, "avatar.jpg", reqFile);
+    }
+
+    public static MultipartBody.Part stringToPart( String key, String value) {
+        RequestBody nameBody = RequestBody.create(
+                value,
+                MediaType.parse("text/plain")
+        );
+        return MultipartBody.Part.createFormData(key, null, nameBody);
     }
 
     private static byte[] readAllBytes(InputStream inputStream) throws IOException {
