@@ -9,6 +9,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fpt.myapplication.R;
+import com.fpt.myapplication.config.WebSocketManager;
 import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.response.LoginResponse;
 import com.fpt.myapplication.model.AuthModel;
@@ -69,6 +70,8 @@ public class LoginActivity extends AppCompatActivity {
                         SessionPrefs sp = SessionPrefs.get(LoginActivity.this);
                         sp.saveToken(response.getToken().getAccessToken());
                         sp.saveUser(response.getUser());
+
+                        WebSocketManager.get().connect(response.getToken().getAccessToken());
                         Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                         startActivity(intent);
                         finish();

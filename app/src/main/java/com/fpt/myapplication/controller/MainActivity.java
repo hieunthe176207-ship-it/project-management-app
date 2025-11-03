@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fpt.myapplication.R;
+import com.fpt.myapplication.config.WebSocketManager;
 import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.response.UserResponse;
 import com.fpt.myapplication.model.UserModel;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
                 handler.removeCallbacks(timeout);
                 SessionPrefs.get(MainActivity.this).saveUser(response);
                 showLoading(false, null);
+                WebSocketManager.get().connect(token);
                 goHome();
             }
 

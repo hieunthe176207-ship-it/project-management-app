@@ -24,15 +24,25 @@ android {
                 "proguard-rules.pro"
             )
         }
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
 }
 
 dependencies {
+    // STOMP
+    implementation ("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
+
+    // RxJava 2 (thư viện STOMP dùng RxJava2 - gói io.reactivex.*)
+    implementation ("io.reactivex.rxjava2:rxjava:2.2.21")
+    implementation ("io.reactivex.rxjava2:rxandroid:2.1.1")
+
+
+    // OkHttp (bất kỳ v4.x ổn)
+    implementation ("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation ("de.hdodenhof:circleimageview:3.1.0")

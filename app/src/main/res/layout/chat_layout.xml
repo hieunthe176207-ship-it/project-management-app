@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- HEADER: MaterialToolbar chứa 1 ConstraintLayout custom -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        app:title=""
+        app:contentInsetStartWithNavigation="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Nội dung header: dùng ConstraintLayout để căn trái bằng nhau -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/toolbarContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            android:paddingEnd="12dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/imgAvatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_group"
+                android:contentDescription="Group avatar"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@android:color/darker_gray"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="RealmReader Group"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                app:layout_constraintStart_toEndOf="@id/imgAvatar"
+                app:layout_constraintTop_toTopOf="@id/imgAvatar"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="12dp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="4 members"
+                android:textSize="12sp"
+                android:textColor="@android:color/darker_gray"
+                app:layout_constraintStart_toStartOf="@id/tvTitle"
+                app:layout_constraintTop_toBottomOf="@id/tvTitle"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <!-- LIST: RecyclerView (paddingStart giống header để thẳng hàng) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/inputBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- INPUT BAR: ConstraintLayout, start/end padding giống nhau -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/inputBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilMessage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Nhập tin nhắn..."
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnSend"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionSend"
+                android:singleLine="true"
+                android:padding="12dp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSend"
+            style="@style/Widget.Material3.Button.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="Send"
+            app:icon="@android:drawable/ic_menu_send"
+            app:iconPadding="0dp"
+            app:cornerRadius="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tilMessage"
+            app:layout_constraintBottom_toBottomOf="@id/tilMessage" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

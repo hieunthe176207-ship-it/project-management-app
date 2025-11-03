@@ -1,6 +1,8 @@
 package com.fpt.myapplication.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,12 +23,15 @@ import com.fpt.myapplication.view.fragment.MyTaskFragment;
 import com.fpt.myapplication.view.fragment.NotificationFragment;
 import com.fpt.myapplication.view.fragment.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class HomeActivity extends AppCompatActivity {
 
     private ProjectModel model;
+    private MaterialCardView btnMessage;
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,10 +41,18 @@ public class HomeActivity extends AppCompatActivity {
         bottomNavigationView.setBackground(null);
         TextView tvGreeting = findViewById(R.id.tvGreeting);
 
+        btnMessage = findViewById(R.id.btnMessage);
         UserResponse user = SessionPrefs.get(this).getUser();
         model = new ProjectModel(this);
         tvGreeting.setText("Hi, "+user.getDisplayName());
         FloatingActionButton fab = findViewById(R.id.fab);
+
+        btnMessage.setOnClickListener(
+                v -> {
+                    Intent intent = new Intent(HomeActivity.this, ChatGroupActivity.class);
+                    startActivity(intent);
+                }
+        );
         fab.setOnClickListener(v -> {
             new AddProjectBottomSheet()
                     .setOnProjectCreated((name, desc, due) -> {

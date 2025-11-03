@@ -28,6 +28,9 @@
             android:name=".controller.ProjectDetailActivity"
             android:exported="false" />
         <activity
+            android:name=".controller.ChatGroupActivity"
+            android:exported="false" />
+        <activity
             android:name=".controller.MainActivity"
             android:exported="true"
             >
