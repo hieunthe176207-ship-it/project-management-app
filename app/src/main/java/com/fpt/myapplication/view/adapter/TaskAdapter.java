@@ -15,12 +15,10 @@ import com.fpt.myapplication.dto.response.TaskResponse;
 // Dùng ListAdapter (thay vì Adapter) vì nó "thông minh" hơn
 public class TaskAdapter extends ListAdapter<TaskResponse, TaskAdapter.TaskViewHolder> {
 
-    // 1. Constructor (Bắt buộc)
     public TaskAdapter() {
         super(DIFF_CALLBACK);
     }
 
-    // 2. Tạo ViewHolder (Ánh xạ UI)
     @NonNull
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -52,7 +50,6 @@ public class TaskAdapter extends ListAdapter<TaskResponse, TaskAdapter.TaskViewH
 
             tvTitle.setText(task.getTitle());
 
-            // Lấy tên Project (an toàn)
             if (task.getProject() != null) {
                 tvProject.setText("Project: " + task.getProject().getName());
                 tvProject.setVisibility(View.VISIBLE);
@@ -61,11 +58,10 @@ public class TaskAdapter extends ListAdapter<TaskResponse, TaskAdapter.TaskViewH
             }
 
             // Lấy Due Date
-            tvDueDate.setText("Due: " + task.getStatus()); // (Bạn có thể đổi thành task.getDueDate() sau)
+            tvDueDate.setText("Due: " + task.getStatus());
         }
     }
 
-    // 5. DiffUtil (Giúp RecyclerView mượt hơn)
     private static final DiffUtil.ItemCallback<TaskResponse> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<TaskResponse>() {
                 @Override
