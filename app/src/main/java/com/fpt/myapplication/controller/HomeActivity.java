@@ -74,7 +74,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
         user = SessionPrefs.get(this).getUser();
         userModel = new UserModel(this);
         messageModel = new MessageModel(this);
-        // ✦ NEW: xin quyền thông báo (API 33+)
+
         ensureNotificationPermission();
         updateFcmToken();
 
