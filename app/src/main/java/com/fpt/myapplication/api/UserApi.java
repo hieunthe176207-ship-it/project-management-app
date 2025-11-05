@@ -12,7 +12,10 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface UserApi {
 
@@ -20,6 +23,12 @@ public interface UserApi {
     Call<ResponseSuccess<UserResponse>> getAccount();
 
     @Multipart
-    @POST("/user/update")
+    @PUT("/user/update")
     Call<ResponseSuccess<UserResponse>> updateAccount(@Part List<MultipartBody.Part> parts);
+
+    @GET("/user/get-all/{id}")
+    Call<ResponseSuccess<List<UserResponse>>> getAllUser(@Path("id") int id);
+
+    @POST("/user/update-token-fcm")
+    Call<ResponseSuccess> updateTokenFCM(@Query("token") String token);
 }

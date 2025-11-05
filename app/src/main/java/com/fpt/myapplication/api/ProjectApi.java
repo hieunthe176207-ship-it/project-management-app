@@ -5,6 +5,7 @@ package com.fpt.myapplication.api;
 import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.request.ProjectCreateRequest;
 import com.fpt.myapplication.dto.response.ProjectResponse;
+import com.fpt.myapplication.dto.response.UserResponse;
 
 import java.util.List;
 
@@ -24,4 +25,10 @@ public interface ProjectApi {
 
     @GET("/project/get/{id}")
     Call<ResponseSuccess<ProjectResponse>> getProjectById(@Path("id") int id);
+
+    @GET("/project/member/{id}")
+    Call<ResponseSuccess<List<UserResponse>>> getProjectsByMemberId(@Path("id") int id);
+
+    @POST("/project/add-members/{projectId}")
+    Call<ResponseSuccess> addMembersToProject(@Path("projectId") int projectId, @Body List<Integer> memberIds);
 }

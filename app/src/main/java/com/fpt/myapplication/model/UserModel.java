@@ -35,6 +35,18 @@ public class UserModel {
         void onError(ResponseError error);
     }
 
+    public interface GetAllUserCallBack{
+        void onLoading();
+        void onSuccess(List<UserResponse> response);
+        void onError(ResponseError error);
+    }
+
+    public interface UpdateTokenFCMCallBack{
+        void onLoading();
+        void onSuccess();
+        void onError(ResponseError error);
+    }
+
     public UserModel(Context ctx) {
         userApi = ApiClient.getRetrofit(ctx).create(UserApi.class);
     }
@@ -82,6 +94,50 @@ public class UserModel {
             @Override
             public void onFailure(Call<ResponseSuccess<UserResponse>> call, Throwable throwable) {
 
+            }
+        });
+    }
+
+    public void getAllUser(int id,GetAllUserCallBack cb){
+        cb.onLoading();
+        userApi.getAllUser(id).enqueue(new Callback<ResponseSuccess<List<UserResponse>>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<List<UserResponse>>> call, Response<ResponseSuccess<List<UserResponse>>> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess<List<UserResponse>> data = response.body();
+                    cb.onSuccess(data.getData());
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<List<UserResponse>>> call, Throwable throwable) {
+                Log.e(TAG, "onFailure: "+ throwable );
+            }
+        });
+    }
+
+
+    public void updateTokenFCM(String token, UpdateTokenFCMCallBack cb){
+        cb.onLoading();
+        userApi.updateTokenFCM(token).enqueue(new Callback<ResponseSuccess>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
+                if(response.isSuccessful()){
+                    cb.onSuccess();
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess> call, Throwable throwable) {
+                Log.e(TAG, "onFailure: "+ throwable );
             }
         });
     }

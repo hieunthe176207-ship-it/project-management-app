@@ -1,5 +1,6 @@
 package com.fpt.myapplication.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -120,6 +121,15 @@ public class ProjectDetailActivity extends AppCompatActivity {
             public void onLoading() {
                 overlay.setVisibility(View.VISIBLE);
             }
+        });
+
+
+        View cardMember = findViewById(R.id.cardThanhVien);
+        cardMember.setOnClickListener(v -> {
+            if (projectId == -1) return; // hoặc show Toast nếu cần
+            Intent i = new Intent(ProjectDetailActivity.this, MemberActivity.class);
+            i.putExtra("projectId", projectId);
+            startActivity(i);
         });
 
     }

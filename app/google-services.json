@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "161231649435",
+    "project_id": "projectmanagement-2617c",
+    "storage_bucket": "projectmanagement-2617c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161231649435:android:236d16ddb66ae8af43243e",
+        "android_client_info": {
+          "package_name": "com.fpt.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3zWG4UGynUTw--HMNFRSMiTkS4iTSVtc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

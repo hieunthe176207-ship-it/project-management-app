@@ -1,5 +1,7 @@
 package com.fpt.myapplication.dto.response;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,11 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChatGroupResponse {
-    private Integer id;
+public class ChatGroupDetailResponse {
+    private int id;
     private String name;
     private String avatar;
-    private UserResponse lastUser;
-    private MessageResponse lastMessage;
-    private boolean hasNew;
+    private List<MessageResponse> messages;
 }
