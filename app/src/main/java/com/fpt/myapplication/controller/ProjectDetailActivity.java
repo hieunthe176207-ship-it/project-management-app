@@ -132,6 +132,24 @@ public class ProjectDetailActivity extends AppCompatActivity {
             startActivity(i);
         });
 
+        View cardKaban = findViewById(R.id.cardBaoCao);
+        cardKaban.setOnClickListener(v -> {
+            if (projectId == -1) return; // hoặc show Toast nếu cần
+            Intent i = new Intent(ProjectDetailActivity.this, KabanBoardActitvity.class);
+            i.putExtra("project_id", projectId);
+            startActivity(i);
+        });
+
+        View cardTask = findViewById(R.id.cardCongViec);
+        cardTask.setOnClickListener(v -> {
+            if (projectId == -1) return; // hoặc show Toast nếu cần
+            Intent i = new Intent(ProjectDetailActivity.this, TaskActivity.class);
+            i.putExtra("project_id", projectId);
+            startActivity(i);
+        });
+
+
+
     }
 
     private void loadAvatar(String url, ImageView target) {

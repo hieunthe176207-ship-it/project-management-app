@@ -71,6 +71,8 @@ public class MemberActivity extends AppCompatActivity {
         });
     }
 
+
+
     private void openAddDialog() {
         AddMemberDialog dialog = AddMemberDialog.newInstance(projectId);
         dialog.setOnMembersAdded(addedCount -> {
