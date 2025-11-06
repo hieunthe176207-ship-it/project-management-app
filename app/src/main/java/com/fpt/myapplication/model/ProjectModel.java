@@ -58,6 +58,30 @@ public class ProjectModel {
         void onLoading();
     }
 
+    public interface GetPublicProjectsCallBack{
+        void onSuccess(List<ProjectResponse> data);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface SendJoinRequestCallBack{
+        void onSuccess(ResponseSuccess data);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface GetJoinRequestsCallBack{
+        void onSuccess(List<UserResponse> data);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface HandleJoinRequestCallBack{
+        void onSuccess(ResponseSuccess data);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
 
     public void createApi (ProjectCreateRequest body, CreateProjectCallBack cb){
         cb.onLoading();
@@ -152,6 +176,95 @@ public class ProjectModel {
     public void addMembersToProject (int projectId, List<Integer> memberIds, AddMembersToProjectCallBack cb){
         cb.onLoading();
         projectApi.addMembersToProject(projectId, memberIds).enqueue(new Callback<ResponseSuccess>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess data = response.body();
+                    cb.onSuccess(data);
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    public void getPublicProjects (GetPublicProjectsCallBack cb){
+        cb.onLoading();
+        projectApi.getPublicProjects().enqueue(new Callback<ResponseSuccess<List<ProjectResponse>>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<List<ProjectResponse>>> call, Response<ResponseSuccess<List<ProjectResponse>>> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess<List<ProjectResponse>> data = response.body();
+                    cb.onSuccess(data.getData());
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<List<ProjectResponse>>> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    public void sendJoinRequest (int projectId, SendJoinRequestCallBack cb){
+        cb.onLoading();
+        projectApi.sendJoinRequest(projectId).enqueue(new Callback<ResponseSuccess>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess data = response.body();
+                    cb.onSuccess(data);
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    public void getJoinRequests (int projectId, GetJoinRequestsCallBack cb){
+        cb.onLoading();
+        projectApi.getJoinRequests(projectId).enqueue(new Callback<ResponseSuccess<List<UserResponse>>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<List<UserResponse>>> call, Response<ResponseSuccess<List<UserResponse>>> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess<List<UserResponse>> data = response.body();
+                    cb.onSuccess(data.getData());
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<List<UserResponse>>> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+
+    public void handleJoinRequest (int projectId, int userId, boolean accept ,HandleJoinRequestCallBack cb){
+        cb.onLoading();
+        projectApi.handleJoinRequest(projectId, userId, accept).enqueue(new Callback<ResponseSuccess>() {
             @Override
             public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
                 if(response.isSuccessful()){

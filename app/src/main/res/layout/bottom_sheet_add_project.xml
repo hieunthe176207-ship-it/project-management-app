@@ -78,8 +78,50 @@
             android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Team -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/tgVisibility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:singleSelection="true"
+        app:selectionRequired="true">
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPublic"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Công khai"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:cornerRadius="16dp"
+            app:checkedIcon="@null"
+            app:backgroundTint="@color/seg_bg"
+            app:strokeColor="@color/seg_stroke"
+            app:strokeWidth="1dp"
+            android:textColor="@color/seg_text" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPrivate"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Riêng tư"
+            android:textAllCaps="false"
+            android:insetTop="0dp"
+            android:textSize="12sp"
+            android:insetBottom="0dp"
+            app:cornerRadius="16dp"
+            app:checkedIcon="@null"
+            app:backgroundTint="@color/seg_bg"
+            app:strokeColor="@color/seg_stroke"
+            app:strokeWidth="1dp"
+            android:textColor="@color/seg_text" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <!-- Deadline -->
     <LinearLayout

@@ -7,6 +7,8 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
+
+
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -185,6 +187,24 @@
                 app:layout_constraintTop_toBottomOf="@id/titleProject"
                 app:textEndPadding="12dp" />
 
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipVisibility"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Riêng tư"
+                android:textColor="@color/md_primary"
+                app:chipCornerRadius="20dp"
+                app:chipBackgroundColor="@color/chip_deadline_bg"
+                app:chipMinHeight="28dp"
+                app:ensureMinTouchTargetSize="false"
+                app:closeIconEnabled="false"
+                app:textStartPadding="12dp"
+                app:textEndPadding="12dp"
+                android:layout_marginTop="10dp"
+                app:layout_constraintStart_toStartOf="@id/titleProject"
+                app:layout_constraintTop_toBottomOf="@id/titleProject"
+                tools:text="Công khai" />
+
 
             <LinearLayout
                 android:id="@+id/creatorRow"
@@ -360,14 +380,71 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-        </LinearLayout>
+            <!-- Yêu cầu tham gia -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardJoinRequests"
+                android:layout_width="0dp"
+                android:layout_height="88dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="@color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                android:visibility="gone"
+            >
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_members"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Yêu cầu"
+
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/badgePendingCount"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="end|top"
+                    android:layout_margin="6dp"
+                    android:gravity="center"
+                    android:text="3"
+
+                    android:textSize="11sp"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/bg_badge_red"
+
+                android:visibility="gone"/>
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+
+    </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout
         android:id="@+id/loadingOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#80000000"
+        android:background="#FFFFFF"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone">
@@ -376,12 +453,11 @@
             android:id="@+id/progress"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:layout_gravity="center"
+            android:visibility="gone"/>
     </FrameLayout>
+
+
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

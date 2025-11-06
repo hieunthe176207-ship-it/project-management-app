@@ -51,6 +51,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".controller.JoinRequestActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".controller.TaskActivity"
             android:exported="false" />
 
