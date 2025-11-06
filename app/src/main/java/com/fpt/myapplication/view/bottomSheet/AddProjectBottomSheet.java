@@ -26,7 +26,7 @@ import java.util.TimeZone;
 public class AddProjectBottomSheet extends BottomSheetDialogFragment {
 
     public interface OnProjectCreated {
-        void onCreated(String name, String desc, String dueDateIso);
+        void onCreated(String name, String desc, String dueDateIso, int isPublic);
     }
 
     @Nullable private OnProjectCreated callback;
@@ -58,7 +58,10 @@ public class AddProjectBottomSheet extends BottomSheetDialogFragment {
                 // behavior.setPeekHeight(content.getHeight(), true);
             }
         });
+        com.google.android.material.button.MaterialButtonToggleGroup tgVisibility =
+                content.findViewById(R.id.tgVisibility);
 
+        tgVisibility.check(R.id.btnPublic);
         TextInputLayout tilName = content.findViewById(R.id.tilName);
         TextInputLayout tilDesc = content.findViewById(R.id.tilDesc);
         TextInputEditText etName = content.findViewById(R.id.etName);
@@ -93,7 +96,8 @@ public class AddProjectBottomSheet extends BottomSheetDialogFragment {
 
         // 2) Validate + tạo
         btnCreate.setOnClickListener(v -> {
-            // clear lỗi cũ
+            // clear lỗi cũ\
+            int isPublic = (tgVisibility.getCheckedButtonId() == R.id.btnPublic) ? 1 : 0;
             tilName.setError(null);
             tilDesc.setError(null);
 
@@ -121,10 +125,8 @@ public class AddProjectBottomSheet extends BottomSheetDialogFragment {
             if (callback != null) {
                 // Nếu không chọn ngày, bạn có thể cho null hoặc "" tùy backend
                 String due = selectedDueDateIso != null ? selectedDueDateIso : "";
-                callback.onCreated(name, desc, due);
+                callback.onCreated(name, desc, due, isPublic);
             }
-
-            Toast.makeText(getContext(), "Đã tạo dự án", Toast.LENGTH_SHORT).show();
             dismiss();
         });
 

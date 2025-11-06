@@ -26,6 +26,7 @@ import com.fpt.myapplication.model.UserModel;
 import com.fpt.myapplication.util.SessionPrefs;
 import com.fpt.myapplication.view.bottomSheet.AddProjectBottomSheet;
 import com.fpt.myapplication.view.fragment.ListProjectFragment;
+import com.fpt.myapplication.view.fragment.ListPublicProjectFragment;
 import com.fpt.myapplication.view.fragment.MyTaskFragment;
 import com.fpt.myapplication.view.fragment.NotificationFragment;
 import com.fpt.myapplication.view.fragment.ProfileFragment;
@@ -74,7 +75,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
         user = SessionPrefs.get(this).getUser();
         userModel = new UserModel(this);
         messageModel = new MessageModel(this);
-        // ✦ NEW: xin quyền thông báo (API 33+)
+
         ensureNotificationPermission();
         updateFcmToken();
 
@@ -112,8 +113,8 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
 
         fab.setOnClickListener(v -> {
             new AddProjectBottomSheet()
-                    .setOnProjectCreated((name, desc, due) -> {
-                        createProject(name, desc, due);
+                    .setOnProjectCreated((name, desc, due, isPublic) -> {
+                        createProject(name, desc, due, isPublic);
                     })
                     .show(getSupportFragmentManager(), "addProject");
         });
@@ -125,7 +126,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
                 setCurrentFragment(new ListProjectFragment(), "home");
             }
             else if(item.getItemId() == R.id.nav_project){
-                setCurrentFragment(new MyTaskFragment(), "profile");
+                setCurrentFragment(new ListPublicProjectFragment(), "profile");
             }
             else if(item.getItemId() == R.id.nav_discussion){
                 setCurrentFragment(new NotificationFragment(), "discuss");
@@ -227,8 +228,8 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
 
     }
 
-    private void createProject(String name, String desc, String due) {
-        ProjectCreateRequest body = new ProjectCreateRequest(name, desc, due);
+    private void createProject(String name, String desc, String due, int isPublic) {
+        ProjectCreateRequest body = new ProjectCreateRequest(name, desc, due, isPublic);
         model.createApi(body, new ProjectModel.CreateProjectCallBack() {
             @Override
             public void onSuccess(ResponseSuccess data) {

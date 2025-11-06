@@ -1,18 +1,19 @@
 package com.fpt.myapplication.dto.request;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class ProjectCreateRequest {
-    private String name;
+public class CreateTaskRequest {
+    private String title;
     private String description;
-    private String deadline;
-    private int isPublic;
-}
+    private String dueDate;
+    private int projectId;
 
+    private List<Integer> assigneeIds;
+}

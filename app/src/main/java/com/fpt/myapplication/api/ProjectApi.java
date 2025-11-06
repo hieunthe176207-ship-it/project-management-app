@@ -14,6 +14,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ProjectApi {
 
@@ -31,4 +32,17 @@ public interface ProjectApi {
 
     @POST("/project/add-members/{projectId}")
     Call<ResponseSuccess> addMembersToProject(@Path("projectId") int projectId, @Body List<Integer> memberIds);
+
+
+    @GET("/project/public-projects")
+    Call<ResponseSuccess<List<ProjectResponse>>> getPublicProjects();
+
+    @POST("/project/join-request")
+    Call<ResponseSuccess> sendJoinRequest(@Query("projectId") int projectId);
+
+    @GET("/project/get-join-requests/{projectId}")
+    Call<ResponseSuccess<List<UserResponse>>> getJoinRequests(@Path("projectId") int projectId);
+
+    @POST("/project/handle-join-request")
+    Call<ResponseSuccess> handleJoinRequest(@Query("projectId") int projectId, @Query("userId") int userId, @Query("isApproved") boolean isApproved);
 }
