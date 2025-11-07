@@ -18,7 +18,7 @@ import com.fpt.myapplication.R;
 import com.fpt.myapplication.config.WebSocketManager;
 import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.response.UserResponse;
-import com.fpt.myapplication.model.UserModel;
+import com.fpt.myapplication.model.UserService;
 import com.fpt.myapplication.util.SessionPrefs;
 
 
@@ -54,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Có token -> gọi /me qua UserModel
-        UserModel model = new UserModel(getApplicationContext());
-        model.getAccount(new UserModel.GetAccountCallBack() {
+        UserService model = new UserService(getApplicationContext());
+        model.getAccount(new UserService.GetAccountCallBack() {
             @Override
             public void onLoading() {
                 showLoading(true, "Đang tải...");

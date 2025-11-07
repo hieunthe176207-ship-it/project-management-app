@@ -1,5 +1,6 @@
 package com.fpt.myapplication.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -34,6 +35,7 @@ public class ProjectDetailActivity extends AppCompatActivity {
     private ImageView imgCreatorAvatar;
     private FrameLayout overlay;
 
+    private View v;
     private CircleImageView a1, a2, a3, a4;
     private View overlayCount;
 
@@ -45,8 +47,8 @@ public class ProjectDetailActivity extends AppCompatActivity {
         int projectId = getIntent().getIntExtra("project_id", -1);
 
         tvDescription = findViewById(R.id.tvDescription);
-        tvTitle       = findViewById(R.id.tvTitle);
-        chipDeadline  = findViewById(R.id.chipDeadline);
+        tvTitle = findViewById(R.id.tvTitle);
+        chipDeadline = findViewById(R.id.chipDeadline);
         overlay = findViewById(R.id.loadingOverlay);
         imgCreatorAvatar = findViewById(R.id.imgCreatorAvatar);
         tvCreatorName = findViewById(R.id.tvCreatorName);
@@ -55,9 +57,8 @@ public class ProjectDetailActivity extends AppCompatActivity {
         a2 = findViewById(R.id.memberAvatar2);
         a3 = findViewById(R.id.memberAvatar3);
         a4 = findViewById(R.id.memberAvatar4);
-        tvCount  = findViewById(R.id.membersCount);
+        tvCount = findViewById(R.id.membersCount);
         overlayCount = findViewById(R.id.overlayCount);
-
 
 
         model = new ProjectModel(this);
@@ -112,7 +113,7 @@ public class ProjectDetailActivity extends AppCompatActivity {
 
             @Override
             public void onError(ResponseError error) {
-                Log.e("PROJECTDETAIL", "onError: "+error );
+                Log.e("PROJECTDETAIL", "onError: " + error);
                 overlay.setVisibility(View.GONE);
             }
 
@@ -120,6 +121,15 @@ public class ProjectDetailActivity extends AppCompatActivity {
             public void onLoading() {
                 overlay.setVisibility(View.VISIBLE);
             }
+        });
+
+        View cardBaoCao = findViewById(R.id.cardBaoCao);
+
+        cardBaoCao.setOnClickListener(v -> {
+            if (projectId == -1) return; // hoặc show Toast nếu cần
+            Intent i = new Intent(ProjectDetailActivity.this, KanbanActivity.class);
+            i.putExtra("projectId", projectId);
+            startActivity(i);
         });
 
     }

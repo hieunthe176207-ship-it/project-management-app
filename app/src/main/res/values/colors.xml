@@ -37,4 +37,14 @@
     <color name="chip_deadline_bg">#FAF2F2</color>
 
 
+    <color name="todo_header">#6c757d</color>
+    <color name="in_progress_header">#17a2b8</color>
+    <color name="in_review_header">#ffc107</color>
+    <color name="done_header">#28a745</color>
+    <color name="due_date_color">#dc3545</color>
+
+
+    <color name="background_kanban_board">#F5F5F5</color>
+
+
 </resources>

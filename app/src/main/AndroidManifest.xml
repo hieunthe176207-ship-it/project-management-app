@@ -31,9 +31,15 @@
             android:name=".controller.ChatGroupActivity"
             android:exported="false" />
         <activity
+            android:name=".controller.KanbanActivity"
+            android:exported="false" />
+
+
+        <activity
             android:name=".controller.MainActivity"
-            android:exported="true"
-            >
+            android:exported="true">
+
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

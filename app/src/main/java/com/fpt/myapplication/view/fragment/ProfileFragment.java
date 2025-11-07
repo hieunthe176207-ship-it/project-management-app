@@ -2,7 +2,6 @@ package com.fpt.myapplication.view.fragment;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,27 +15,22 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.fpt.myapplication.R;
-import com.fpt.myapplication.controller.RegisterActivity;
 import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.response.UserResponse;
-import com.fpt.myapplication.model.UserModel;
+import com.fpt.myapplication.model.UserService;
 import com.fpt.myapplication.util.FileUtil;
 import com.fpt.myapplication.util.SessionPrefs;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import de.hdodenhof.circleimageview.CircleImageView;
-import okhttp3.MediaType;
 import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import retrofit2.http.Multipart;
 
 public class ProfileFragment extends Fragment {
 
@@ -48,7 +42,7 @@ public class ProfileFragment extends Fragment {
 
     private TextInputLayout tilDisplayName;
 
-    private UserModel userModel;
+    private UserService userModel;
     private MaterialButton btnSave;
     private TextInputEditText etDisplayName;
     public ProfileFragment() { }
@@ -89,7 +83,7 @@ public class ProfileFragment extends Fragment {
         tilDisplayName = view.findViewById(R.id.tilDisplayName);
         etDisplayName = view.findViewById(R.id.etDisplayName);
         btnSave = view.findViewById(R.id.btnSave);
-        userModel = new UserModel(requireContext());
+        userModel = new UserService(requireContext());
         UserResponse user = SessionPrefs.get(requireContext()).getUser();
 
         if (user != null) {
@@ -117,7 +111,7 @@ public class ProfileFragment extends Fragment {
             }
             MultipartBody.Part namePart = FileUtil.stringToPart(name, "displayName");
             parts.add(namePart);
-            userModel.updateAccount(parts, new UserModel.UpdateAccountCallBack() {
+            userModel.updateAccount(parts, new UserService.UpdateAccountCallBack() {
                 @Override
                 public void onLoading() {
                     btnSave.setEnabled(false);

@@ -16,6 +16,24 @@ public final class ApiClient {
     private static volatile Retrofit retrofit;
     private static final Object LOCK = new Object();
 
+    private static final String BASE_URL = "http://your-backend-url.com/"; // Thay đổi URL này
+//    // 10.0.2.2 là địa chỉ localhost trên máy ảo Android (Emulator)
+
+    // com.fpt.myapplication.config.ApiClient
+//    private static final String BASE_URL = "http://10.0.2.2:8080"; // <--- THÊM /API VÀO BASE URL
+//    private static final String PRODUCTION_BASE_URL = "http://10.0.2.2:8080";
+
+
+    public static Retrofit getClient() {
+        if (retrofit == null) {
+            retrofit = new Retrofit.Builder()
+                    .baseUrl(BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+        }
+        return retrofit;
+    }
+
     private ApiClient() {}
 
     // ✅ Gọi: ApiClient.getRetrofit(getApplicationContext())
