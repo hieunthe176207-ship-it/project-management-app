@@ -12,5 +12,6 @@ public class ChatGroupResponse {
     private String name;
     private String avatar;
     private UserResponse lastUser;
-    private String lastMessage;
+    private MessageResponse lastMessage;
+    private boolean hasNew;
 }

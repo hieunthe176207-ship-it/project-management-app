@@ -10,23 +10,23 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.fpt.myapplication.R;
-import com.fpt.myapplication.model.TaskModel;
+import com.fpt.myapplication.dto.response.UpdateTaskReponse;
 import com.fpt.myapplication.model.TaskStatus;
 import com.fpt.myapplication.model.User;
 import java.util.List;
 
 public class DragDropTaskAdapter extends RecyclerView.Adapter<DragDropTaskAdapter.TaskViewHolder> {
 
-    private List<TaskModel> tasks;
+    private List<UpdateTaskReponse> tasks;
     private OnTaskActionListener listener;
 
     public interface OnTaskActionListener {
-        void onTaskClick(TaskModel task);
+        void onTaskClick(UpdateTaskReponse task);
         void onTaskStartDrag(TaskViewHolder viewHolder);
-        void onTaskMoved(TaskModel task, TaskStatus newStatus);
+        void onTaskMoved(UpdateTaskReponse task, TaskStatus newStatus);
     }
 
-    public DragDropTaskAdapter(List<TaskModel> tasks) {
+    public DragDropTaskAdapter(List<UpdateTaskReponse> tasks) {
         this.tasks = tasks;
     }
 
@@ -44,7 +44,7 @@ public class DragDropTaskAdapter extends RecyclerView.Adapter<DragDropTaskAdapte
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        TaskModel task = tasks.get(position);
+        UpdateTaskReponse task = tasks.get(position);
         holder.bind(task);
     }
 
@@ -53,12 +53,12 @@ public class DragDropTaskAdapter extends RecyclerView.Adapter<DragDropTaskAdapte
         return tasks.size();
     }
 
-    public void updateTasks(List<TaskModel> newTasks) {
+    public void updateTasks(List<UpdateTaskReponse> newTasks) {
         this.tasks = newTasks;
         notifyDataSetChanged();
     }
 
-    public void removeTask(TaskModel task) {
+    public void removeTask(UpdateTaskReponse task) {
         int position = tasks.indexOf(task);
         if (position != -1) {
             tasks.remove(position);
@@ -66,7 +66,7 @@ public class DragDropTaskAdapter extends RecyclerView.Adapter<DragDropTaskAdapte
         }
     }
 
-    public void addTask(TaskModel task) {
+    public void addTask(UpdateTaskReponse task) {
         tasks.add(task);
         notifyItemInserted(tasks.size() - 1);
     }
@@ -105,7 +105,7 @@ public class DragDropTaskAdapter extends RecyclerView.Adapter<DragDropTaskAdapte
             });
         }
 
-        public void bind(TaskModel task) {
+        public void bind(UpdateTaskReponse task) {
             tvTaskTitle.setText(task.getTitle());
             tvTaskDescription.setText(task.getDescription());
 

@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.fpt.myapplication.R;
+import com.fpt.myapplication.dto.response.UpdateTaskReponse;
 import com.fpt.myapplication.model.TaskModel;
 import com.fpt.myapplication.model.User;
 import java.util.Collections;
@@ -17,21 +18,21 @@ import java.util.List;
 
 public class KanbanDragDropAdapter extends RecyclerView.Adapter<KanbanDragDropAdapter.TaskViewHolder> {
 
-    private List<TaskModel> tasks;
+    private List<UpdateTaskReponse> tasks;
     private OnTaskActionListener listener;
 
     // BÊN TRONG KanbanDragDropAdapter.java
 
     public interface OnTaskActionListener {
-        void onTaskClick(TaskModel task);
+        void onTaskClick(UpdateTaskReponse task);
         // THAY ĐỔI DÒNG NÀY:
         // void onTaskStartDrag(TaskViewHolder viewHolder);
-        void onTaskStartDrag(TaskModel task, View dragView); // Thay bằng dòng này
+        void onTaskStartDrag(UpdateTaskReponse task, View dragView); // Thay bằng dòng này
 
-        void onTaskMoved(TaskModel task, int fromPosition, int toPosition);
+        void onTaskMoved(UpdateTaskReponse task, int fromPosition, int toPosition);
     }
 
-    public KanbanDragDropAdapter(List<TaskModel> tasks) {
+    public KanbanDragDropAdapter(List<UpdateTaskReponse> tasks) {
         this.tasks = tasks;
     }
 
@@ -49,7 +50,7 @@ public class KanbanDragDropAdapter extends RecyclerView.Adapter<KanbanDragDropAd
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        TaskModel task = tasks.get(position);
+        UpdateTaskReponse task = tasks.get(position);
         holder.bind(task);
     }
 
@@ -58,7 +59,7 @@ public class KanbanDragDropAdapter extends RecyclerView.Adapter<KanbanDragDropAd
         return tasks != null ? tasks.size() : 0;
     }
 
-    public void updateTasks(List<TaskModel> newTasks) {
+    public void updateTasks(List<UpdateTaskReponse> newTasks) {
         this.tasks = newTasks;
         notifyDataSetChanged();
     }
@@ -74,30 +75,30 @@ public class KanbanDragDropAdapter extends RecyclerView.Adapter<KanbanDragDropAd
         }
     }
 
-    public TaskModel removeItem(int position) {
+    public UpdateTaskReponse removeItem(int position) {
         if (tasks != null && position < tasks.size()) {
-            TaskModel task = tasks.remove(position);
+            UpdateTaskReponse task = tasks.remove(position);
             notifyItemRemoved(position);
             return task;
         }
         return null;
     }
 
-    public void addItem(TaskModel task) {
+    public void addItem(UpdateTaskReponse task) {
         if (tasks != null) {
             tasks.add(task);
             notifyItemInserted(tasks.size() - 1);
         }
     }
 
-    public void addItem(TaskModel task, int position) {
+    public void addItem(UpdateTaskReponse task, int position) {
         if (tasks != null) {
             tasks.add(position, task);
             notifyItemInserted(position);
         }
     }
 
-    public List<TaskModel> getTasks() {
+    public List<UpdateTaskReponse> getTasks() {
         return tasks;
     }
 
@@ -137,7 +138,7 @@ public class KanbanDragDropAdapter extends RecyclerView.Adapter<KanbanDragDropAd
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
                             // 1. TaskModel
-                            TaskModel taskToDrag = tasks.get(position);
+                            UpdateTaskReponse taskToDrag = tasks.get(position);
                             // 2. View
                             View viewToDrag = itemView;
 
@@ -150,7 +151,7 @@ public class KanbanDragDropAdapter extends RecyclerView.Adapter<KanbanDragDropAd
             });
         }
 
-        public void bind(TaskModel task) {
+        public void bind(UpdateTaskReponse task) {
             tvTaskTitle.setText(task.getTitle());
             tvTaskDescription.setText(task.getDescription());
 

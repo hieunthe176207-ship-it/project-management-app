@@ -1,10 +1,12 @@
 package com.fpt.myapplication.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,21 +15,40 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fpt.myapplication.R;
 import com.fpt.myapplication.config.WebSocketManager;
+import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.request.ChatMessage;
+import com.fpt.myapplication.dto.request.MessageRequest;
+import com.fpt.myapplication.dto.response.ChatGroupDetailResponse;
+import com.fpt.myapplication.dto.response.MessageResponse;
+import com.fpt.myapplication.dto.response.UserResponse;
+import com.fpt.myapplication.model.MessageModel;
+import com.fpt.myapplication.util.SessionPrefs;
 import com.fpt.myapplication.view.adapter.ChatAdapter;
+import com.fpt.myapplication.view.adapter.MessageAdapter;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class ChatActivity extends AppCompatActivity implements  WebSocketManager.MessageListener {
 
+
+    private CircleImageView imgAvatar;
+
+    private TextView tvTitle;
     private RecyclerView recyclerView;
-    private ChatAdapter adapter;
-    private EditText edtMessage;
-    private ImageButton btnSend;
+    private MessageAdapter adapter;
 
+    private MessageModel  messageModel;
 
-    private List<ChatMessage> messageList;
+    private TextInputEditText edtMessage;
+
+    private MaterialButton btnSend;
+
+    private int groupId;
 
 
     @Override
@@ -35,21 +56,61 @@ public class ChatActivity extends AppCompatActivity implements  WebSocketManager
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chat_layout);
 
-        recyclerView = findViewById(R.id.recyclerView);
-        edtMessage   = findViewById(R.id.edtMessage);
-        btnSend      = findViewById(R.id.btnSend);
+        messageModel = new MessageModel(this);
+        adapter = new MessageAdapter();
 
-        adapter = new ChatAdapter();
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        UserResponse user = SessionPrefs.get(this).getUser();
+
+        Intent intent = getIntent();
+        groupId = intent.getIntExtra("id", -1);
+        if (groupId == -1) {
+            String idStr = intent.getStringExtra("id");
+            if (idStr != null) {
+                try { groupId = Integer.parseInt(idStr); } catch (NumberFormatException ignore) {}
+            }
+        }
+
+        edtMessage = findViewById(R.id.edtMessage);
+        btnSend = findViewById(R.id.btnSend);
+
+        recyclerView = findViewById(R.id.recyclerView);
+        tvTitle = findViewById(R.id.tvTitle);
+
+        LinearLayoutManager lm = new LinearLayoutManager(this);
+        lm.setStackFromEnd(true);
+        recyclerView.setLayoutManager(lm);
         recyclerView.setAdapter(adapter);
 
-        WebSocketManager.get().connect("");
+
+        messageModel.getAllMessage(groupId, new MessageModel.GetAllMessageCallBack() {
+            @Override
+            public void onLoading() {
+
+            }
+
+            @Override
+            public void onError(ResponseError error) {
+
+            }
+
+            @Override
+            public void onSuccess(ChatGroupDetailResponse data) {
+                tvTitle.setText(data.getName());
+                adapter.setMessages(data.getMessages());
+            }
+        });
 
         btnSend.setOnClickListener(v -> {
-            String content = edtMessage.getText() != null ? edtMessage.getText().toString().trim() : "";
-            if (TextUtils.isEmpty(content)) return;
-            WebSocketManager.get().sendToChat(content);
-            recyclerView.scrollToPosition(adapter.getItemCount() - 1);
+            String content = edtMessage.getText().toString().trim();
+            if (TextUtils.isEmpty(content)) {
+                return;
+            }
+            MessageRequest request = new MessageRequest();
+            request.setChatGroupId(groupId);
+            request.setContent(content);
+            request.setEmail(user.getEmail());
+            String bodyJson = new Gson().toJson(request);
+            WebSocketManager.get().send("/app/chat", bodyJson);
             edtMessage.setText("");
         });
     }
@@ -59,7 +120,7 @@ public class ChatActivity extends AppCompatActivity implements  WebSocketManager
         super.onStart();
         WebSocketManager ws = WebSocketManager.get();
         ws.addListener(this);
-        ws.subscribeTopic("/topic/public");
+        ws.subscribeTopic("/topic/group/"+groupId);
     }
 
     @Override
@@ -85,11 +146,12 @@ public class ChatActivity extends AppCompatActivity implements  WebSocketManager
 
     @Override
     public void onNewMessage(String topic, String payload) {
-        Log.d("CHAT", "onNewMessage: "+ payload);
-        ChatMessage message = new Gson().fromJson(payload, ChatMessage.class);
-        runOnUiThread(() -> {
-            adapter.addMessage(message);
-            recyclerView.scrollToPosition(adapter.getItemCount() - 1);
-        });
+       if(topic.equals("/topic/group/"+groupId)){
+           MessageResponse message = new Gson().fromJson(payload, MessageResponse.class);
+           runOnUiThread(() -> {
+               adapter.addMessage(message);
+               recyclerView.scrollToPosition(adapter.getItemCount() - 1);
+           });
+       }
     }
 }

@@ -12,21 +12,22 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.fpt.myapplication.R;
+import com.fpt.myapplication.dto.response.UpdateTaskReponse;
 import com.fpt.myapplication.model.TaskModel;
 import com.fpt.myapplication.model.User; // Đổi tên từ UserModel thành User
 import java.util.List;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
-    private List<TaskModel> tasks;
+    private List<UpdateTaskReponse> tasks;
     private OnTaskClickListener onTaskClickListener;
 
     public interface OnTaskClickListener {
-        void onTaskClick(TaskModel task);
-        void onTaskLongClick(TaskModel task);
+        void onTaskClick(UpdateTaskReponse task);
+        void onTaskLongClick(UpdateTaskReponse task);
     }
 
-    public TaskAdapter(List<TaskModel> tasks) {
+    public TaskAdapter(List<UpdateTaskReponse> tasks) {
         this.tasks = tasks;
     }
 
@@ -44,7 +45,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        TaskModel task = tasks.get(position);
+        UpdateTaskReponse task = tasks.get(position);
         holder.bind(task);
     }
 
@@ -56,7 +57,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     }
 
 
-    public void updateTasks(List<TaskModel> newTasks) {
+    public void updateTasks(List<UpdateTaskReponse> newTasks) {
         this.tasks = newTasks;
         notifyDataSetChanged();
     }
@@ -94,7 +95,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             });
         }
 
-        public void bind(TaskModel task) {
+        public void bind(UpdateTaskReponse task) {
             tvTaskTitle.setText(task.getTitle());
             tvTaskDescription.setText(task.getDescription());
 

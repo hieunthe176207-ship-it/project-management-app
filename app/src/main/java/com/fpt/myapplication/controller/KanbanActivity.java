@@ -17,9 +17,9 @@ import com.fpt.myapplication.api.TaskApi;
 import com.fpt.myapplication.config.ApiClient;
 import com.fpt.myapplication.dto.request.TaskUpdateStatusRequestDto;
 import com.fpt.myapplication.dto.ResponseSuccess;
+import com.fpt.myapplication.dto.response.UpdateTaskReponse;
 import com.fpt.myapplication.model.KanbanBoardModel;
 import com.fpt.myapplication.model.ProjectModel;
-import com.fpt.myapplication.model.TaskModel;
 import com.fpt.myapplication.model.TaskStatus;
 import com.fpt.myapplication.util.CrossColumnDropZone;
 // import com.fpt.project.util.DragDropHelper; // <-- KHÔNG CẦN NỮA
@@ -57,7 +57,7 @@ public class KanbanActivity extends AppCompatActivity implements
     private CrossColumnDropZone.DropZoneOverlay todoDropZone, inProgressDropZone,
             inReviewDropZone, doneDropZone;
 
-    private TaskModel currentDraggedTask;
+    private UpdateTaskReponse currentDraggedTask;
     private TaskStatus currentDraggedFromStatus;
 
     @Override
@@ -288,7 +288,7 @@ public class KanbanActivity extends AppCompatActivity implements
 
     // --- Implement KanbanDragDropAdapter.OnTaskActionListener ---
     @Override
-    public void onTaskClick(TaskModel task) {
+    public void onTaskClick(UpdateTaskReponse task) {
         Toast.makeText(this, "Clicked: " + task.getTitle(), Toast.LENGTH_SHORT).show();
     }
 
@@ -297,7 +297,7 @@ public class KanbanActivity extends AppCompatActivity implements
      * được gọi từ adapter sau khi bạn thay đổi interface.
      */
     @Override
-    public void onTaskStartDrag(TaskModel task, View dragView) {
+    public void onTaskStartDrag(UpdateTaskReponse task, View dragView) {
         // 1. Lưu lại task và cột nguồn
         currentDraggedTask = task;
         RecyclerView sourceRecyclerView = (RecyclerView) dragView.getParent();
@@ -328,7 +328,7 @@ public class KanbanActivity extends AppCompatActivity implements
 
     // PHƯƠNG THỨC CŨ (có thể xóa hoặc giữ lại để gọi API)
     @Override
-    public void onTaskMoved(TaskModel task, int fromPosition, int toPosition) {
+    public void onTaskMoved(UpdateTaskReponse task, int fromPosition, int toPosition) {
         Log.d(TAG, "Task moved within column: " + task.getTitle());
         // TODO: Gọi API để cập nhật thứ tự task TRONG CÙNG MỘT CỘT (nếu cần)
     }
@@ -337,16 +337,16 @@ public class KanbanActivity extends AppCompatActivity implements
     // private void moveTaskToColumn(TaskModel task, TaskStatus fromStatus, TaskStatus toStatus) { ... }
 
 
-    private void updateTaskStatusViaApi(TaskModel task, TaskStatus newStatus) {
+    private void updateTaskStatusViaApi(UpdateTaskReponse task, TaskStatus newStatus) {
         TaskUpdateStatusRequestDto request = new TaskUpdateStatusRequestDto(newStatus);
 
-        Call<ResponseSuccess<TaskModel>> call = taskApi.updateTaskStatus(task.getId().intValue(), request);
-        call.enqueue(new Callback<ResponseSuccess<TaskModel>>() {
+        Call<ResponseSuccess<UpdateTaskReponse>> call = taskApi.updateTaskStatus(task.getId().intValue(), request);
+        call.enqueue(new Callback<ResponseSuccess<UpdateTaskReponse>>() {
 
 
             @Override
-            public void onResponse(Call<ResponseSuccess<TaskModel>> call,
-                                   Response<ResponseSuccess<TaskModel>> response) {
+            public void onResponse(Call<ResponseSuccess<UpdateTaskReponse>> call,
+                                   Response<ResponseSuccess<UpdateTaskReponse>> response) {
                 if (response.isSuccessful()) {
                     Log.d(TAG, "Task status updated successfully via API");
                     Toast.makeText(KanbanActivity.this, "Task moved to " + newStatus.name(), Toast.LENGTH_SHORT).show();
@@ -381,7 +381,7 @@ public class KanbanActivity extends AppCompatActivity implements
             }
 
             @Override
-            public void onFailure(Call<ResponseSuccess<TaskModel>> call, Throwable t) {
+            public void onFailure(Call<ResponseSuccess<UpdateTaskReponse>> call, Throwable t) {
                 Log.e(TAG, "API call failed", t);
                 Toast.makeText(KanbanActivity.this, "Network error", Toast.LENGTH_SHORT).show();
                 // Revert the move

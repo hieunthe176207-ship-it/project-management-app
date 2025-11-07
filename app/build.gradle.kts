@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
+    // BẬT plugin Google services ở module app
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -30,6 +32,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -39,9 +44,9 @@ dependencies {
     // RxJava 2 (thư viện STOMP dùng RxJava2 - gói io.reactivex.*)
     implementation ("io.reactivex.rxjava2:rxjava:2.2.21")
     implementation ("io.reactivex.rxjava2:rxandroid:2.1.1")
-
-
-    // OkHttp (bất kỳ v4.x ổn)
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    // Chọn SDK bạn cần, ví dụ: Firebase Cloud Messaging
+    implementation("com.google.firebase:firebase-messaging")
     implementation ("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")

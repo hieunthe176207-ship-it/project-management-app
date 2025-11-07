@@ -269,19 +269,6 @@ public class WebSocketManager {
      * - Bên Spring Boot: @MessageMapping("/chat") → đích STOMP là "/app/chat".
      * - Server sau đó broadcast ra các topic (ví dụ "/topic/public").
      */
-    public void sendToChat(String content) {
-        if (!ensureConnected()) return;
-        ChatMessage msg = new ChatMessage();
-        msg.setContent(content);
-        msg.setSender("Me");
-        msg.setTo("You");
-        msg.setTimestamp(0);
-        String json = new Gson().toJson(msg);
-        stomp.send("/app/chat", json).subscribe(
-                () -> logD("sendToChat OK: " + json),
-                t  -> logE("sendToChat error: " + t.getMessage(), t)
-        );
-    }
 
     /**
      * Ví dụ: gửi tin tới 1 destination bất kỳ (linh hoạt hơn).

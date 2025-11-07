@@ -29,6 +29,12 @@ public class ChatGroupModel {
         void onLoading();
     }
 
+    public interface MarkGroupAsReadCallBack{
+        void onSuccess();
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
 
 
     public void getAllChatGroups(GetAllGroupChatCallBack cb) {
@@ -50,6 +56,29 @@ public class ChatGroupModel {
 
             @Override
             public void onFailure(Call<ResponseSuccess<List<ChatGroupResponse>>> call, Throwable t) {
+                // Handle failure
+            }
+        });
+    }
+
+    public void markGroupAsRead(Integer groupId, MarkGroupAsReadCallBack cb) {
+        cb.onLoading();
+        // Implementation for marking group as read will go here
+        chatGroupApi.markGroupAsRead(groupId).enqueue(new Callback<ResponseSuccess<Void>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<Void>> call, Response<ResponseSuccess<Void>> response) {
+                if (response.isSuccessful()) {
+                    cb.onSuccess();
+                    // Handle success
+                } else {
+                    ResponseError error = Util.parseError(response);
+                    // Handle error
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<Void>> call, Throwable t) {
                 // Handle failure
             }
         });

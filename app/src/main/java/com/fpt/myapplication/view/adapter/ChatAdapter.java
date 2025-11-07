@@ -22,13 +22,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
 
     private final List<ChatMessage> messages = new ArrayList<>();
 
-
-
     @NonNull
     @Override
     public ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_message, parent, false);
+                .inflate(R.layout.item_message_incoming, parent, false);
         return new ChatViewHolder(v);
     }
 
