@@ -1,45 +1,44 @@
 package com.fpt.myapplication.view.adapter;
 
 
-
-
-
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.fpt.myapplication.R;
 import com.fpt.myapplication.dto.response.UpdateTaskReponse;
-import com.fpt.myapplication.model.TaskModel;
-import com.fpt.myapplication.model.User; // Đổi tên từ UserModel thành User
+import com.fpt.myapplication.model.TaskStatus;
+import com.fpt.myapplication.model.User;
 import java.util.List;
 
-public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
+public class DragDropTaskAdapter extends RecyclerView.Adapter<DragDropTaskAdapter.TaskViewHolder> {
 
     private List<UpdateTaskReponse> tasks;
-    private OnTaskClickListener onTaskClickListener;
+    private OnTaskActionListener listener;
 
-    public interface OnTaskClickListener {
+    public interface OnTaskActionListener {
         void onTaskClick(UpdateTaskReponse task);
-        void onTaskLongClick(UpdateTaskReponse task);
+        void onTaskStartDrag(TaskViewHolder viewHolder);
+        void onTaskMoved(UpdateTaskReponse task, TaskStatus newStatus);
     }
 
-    public TaskAdapter(List<UpdateTaskReponse> tasks) {
+    public DragDropTaskAdapter(List<UpdateTaskReponse> tasks) {
         this.tasks = tasks;
     }
 
-    public void setOnTaskClickListener(OnTaskClickListener listener) {
-        this.onTaskClickListener = listener;
+    public void setOnTaskActionListener(OnTaskActionListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_task_card, parent, false);
+                .inflate(R.layout.item_task_card_draggable, parent, false);
         return new TaskViewHolder(view);
     }
 
@@ -51,22 +50,33 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @Override
     public int getItemCount() {
-        int count = tasks != null ? tasks.size() : 0;
-        Log.d("TaskAdapter", "getItemCount: " + count);
-        return count;
+        return tasks.size();
     }
-
 
     public void updateTasks(List<UpdateTaskReponse> newTasks) {
         this.tasks = newTasks;
         notifyDataSetChanged();
     }
 
-    class TaskViewHolder extends RecyclerView.ViewHolder {
+    public void removeTask(UpdateTaskReponse task) {
+        int position = tasks.indexOf(task);
+        if (position != -1) {
+            tasks.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
+    public void addTask(UpdateTaskReponse task) {
+        tasks.add(task);
+        notifyItemInserted(tasks.size() - 1);
+    }
+
+    public class TaskViewHolder extends RecyclerView.ViewHolder {
         private TextView tvTaskTitle;
         private TextView tvTaskDescription;
         private TextView tvTaskDueDate;
         private TextView tvAssignees;
+        private ImageView ivDragHandle;
 
         public TaskViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -74,24 +84,24 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             tvTaskDescription = itemView.findViewById(R.id.tv_task_description);
             tvTaskDueDate = itemView.findViewById(R.id.tv_task_due_date);
             tvAssignees = itemView.findViewById(R.id.tv_assignees);
+            ivDragHandle = itemView.findViewById(R.id.iv_drag_handle);
 
             itemView.setOnClickListener(v -> {
-                if (onTaskClickListener != null) {
+                if (listener != null) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
-                        onTaskClickListener.onTaskClick(tasks.get(position));
+                        listener.onTaskClick(tasks.get(position));
                     }
                 }
             });
 
-            itemView.setOnLongClickListener(v -> {
-                if (onTaskClickListener != null) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        onTaskClickListener.onTaskLongClick(tasks.get(position));
+            ivDragHandle.setOnTouchListener((v, event) -> {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if (listener != null) {
+                        listener.onTaskStartDrag(this);
                     }
                 }
-                return true;
+                return false;
             });
         }
 
@@ -107,7 +117,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             }
 
             if (task.getAssignees() != null && !task.getAssignees().isEmpty()) {
-                // Sử dụng StringBuilder thay vì Stream API
                 StringBuilder assigneeNames = new StringBuilder();
                 for (int i = 0; i < task.getAssignees().size(); i++) {
                     if (i > 0) {

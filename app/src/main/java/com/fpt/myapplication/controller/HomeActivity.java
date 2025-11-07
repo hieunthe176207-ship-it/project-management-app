@@ -27,7 +27,6 @@ import com.fpt.myapplication.util.SessionPrefs;
 import com.fpt.myapplication.view.bottomSheet.AddProjectBottomSheet;
 import com.fpt.myapplication.view.fragment.ListProjectFragment;
 import com.fpt.myapplication.view.fragment.ListPublicProjectFragment;
-import com.fpt.myapplication.view.fragment.MyTaskFragment;
 import com.fpt.myapplication.view.fragment.NotificationFragment;
 import com.fpt.myapplication.view.fragment.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;

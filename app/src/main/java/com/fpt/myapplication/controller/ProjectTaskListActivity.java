@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import com.fpt.myapplication.R;
 import com.fpt.myapplication.dto.response.TaskResponse;
+import com.fpt.myapplication.view.adapter.CardTaskAdapter;
 import com.fpt.myapplication.view.adapter.TaskAdapter;
 import com.fpt.myapplication.view.bottomSheet.AddTaskBottomSheet;
 import com.fpt.myapplication.viewmodel.ProjectTaskListViewModel;
@@ -20,7 +21,7 @@ import java.util.List;
 
 public class ProjectTaskListActivity extends AppCompatActivity {
     private ProjectTaskListViewModel viewModel;
-    private TaskAdapter adapter;
+    private CardTaskAdapter adapter;
     private int projectId;
     private List<TaskResponse> allTasks = new ArrayList<>();
     private TextView btnTask, btnProcess, btnCompleted, btnInform, tvProgressCount, tvProjectDeadline;
@@ -32,7 +33,7 @@ public class ProjectTaskListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_project_task_list);
         projectId = getIntent().getIntExtra("project_id", -1); // TODO BACKEND: Truyền từ ProjectDetailActivity
         androidx.recyclerview.widget.RecyclerView rv = findViewById(R.id.rvProjectTasks);
-        adapter = new TaskAdapter();
+        adapter = new CardTaskAdapter();
         rv.setLayoutManager(new GridLayoutManager(this, 2)); // 2 cột theo yêu cầu UI
         rv.setAdapter(adapter);
         tvProjectDeadline = findViewById(R.id.tvProjectDeadline);
