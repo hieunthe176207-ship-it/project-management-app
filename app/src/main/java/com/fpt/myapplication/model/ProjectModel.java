@@ -9,6 +9,7 @@ import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.request.ProjectCreateRequest;
 import com.fpt.myapplication.dto.response.ProjectResponse;
+import com.fpt.myapplication.dto.response.SearchResponse;
 import com.fpt.myapplication.dto.response.UserResponse;
 import com.fpt.myapplication.util.Util;
 
@@ -78,6 +79,24 @@ public class ProjectModel {
 
     public interface HandleJoinRequestCallBack{
         void onSuccess(ResponseSuccess data);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface UpdateMemberFromProjectCallBack{
+        void onSuccess(ResponseSuccess data);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface  RemoveMemberFromProjectCallBack{
+        void onSuccess(ResponseSuccess data);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface GlobalSearchCallBack{
+        void onSuccess(SearchResponse data);
         void onError(ResponseError error);
         void onLoading();
     }
@@ -279,6 +298,73 @@ public class ProjectModel {
 
             @Override
             public void onFailure(Call<ResponseSuccess> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    public void updateMemberFromProject (int projectId, int userId, int role ,UpdateMemberFromProjectCallBack cb){
+        cb.onLoading();
+        projectApi.updateMemberRole(projectId, userId, role).enqueue(new Callback<ResponseSuccess>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess data = response.body();
+                    cb.onSuccess(data);
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+
+    public void removeMemberFromProject (int projectId, int userId ,RemoveMemberFromProjectCallBack cb){
+        cb.onLoading();
+        projectApi.removeMemberFromProject(projectId, userId).enqueue(new Callback<ResponseSuccess>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess data = response.body();
+                    cb.onSuccess(data);
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    public void globalSearch (String keyword ,GlobalSearchCallBack cb){
+        cb.onLoading();
+        projectApi.searchGlobal(keyword).enqueue(new Callback<ResponseSuccess<SearchResponse>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<SearchResponse>> call, Response<ResponseSuccess<SearchResponse>> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess<SearchResponse> data = response.body();
+                    cb.onSuccess(data.getData());
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<SearchResponse>> call, Throwable throwable) {
 
             }
         });

@@ -26,6 +26,9 @@
     <color name="md_error">#B3261E</color>
     <color name="md_onError">#FFFFFF</color>
 
+
+    <color name="bn_background">#F5F0FF</color>
+    <color name="fab_purple">#E7DBFF</color>
     <!-- Accent icon vàng (task icon) -->
     <color name="accent_yellow">#FFCD04</color>
     <color name="on_accent_yellow">#FFFFFF</color>

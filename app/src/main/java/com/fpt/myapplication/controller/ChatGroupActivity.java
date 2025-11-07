@@ -3,6 +3,7 @@ package com.fpt.myapplication.controller;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import com.fpt.myapplication.dto.response.UserResponse;
 import com.fpt.myapplication.model.ChatGroupModel;
 import com.fpt.myapplication.util.SessionPrefs;
 import com.fpt.myapplication.view.adapter.ChatGroupAdapter;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -31,6 +33,9 @@ public class ChatGroupActivity extends AppCompatActivity implements WebSocketMan
     private RecyclerView rvGroups;
     private ChatGroupAdapter adapter;
 
+    private View loadingOverlay;
+    private CircularProgressIndicator progressBar;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +43,8 @@ public class ChatGroupActivity extends AppCompatActivity implements WebSocketMan
 
         chatGroupModel = new ChatGroupModel(this);
         rvGroups = findViewById(R.id.rvGroups);
-
+        loadingOverlay = findViewById(R.id.loadingOverlay);
+        progressBar = findViewById(R.id.progressBar);
         adapter = new ChatGroupAdapter();
         rvGroups.setLayoutManager(new LinearLayoutManager(this));
         rvGroups.setAdapter(adapter);
@@ -71,25 +77,34 @@ public class ChatGroupActivity extends AppCompatActivity implements WebSocketMan
             });
         });
 
+
+    }
+
+    private void fetchApi(){
         chatGroupModel.getAllChatGroups(new ChatGroupModel.GetAllGroupChatCallBack() {
             @Override
             public void onSuccess(List<ChatGroupResponse> data) {
                 adapter.submitList(data);
+                hideLoading();
             }
 
             @Override
             public void onError(ResponseError error) {
                 // TODO: show Toast/log
+                hideLoading();
             }
 
             @Override
-            public void onLoading() { }
+            public void onLoading() {
+                showLoading();
+            }
         });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        fetchApi();
         UserResponse user = SessionPrefs.get(this).getUser();
         WebSocketManager ws = WebSocketManager.get();
         ws.addListener(this);
@@ -135,5 +150,19 @@ public class ChatGroupActivity extends AppCompatActivity implements WebSocketMan
             if (g != null && g.getId() == groupId) return i;
         }
         return -1;
+    }
+
+    private void showLoading() {
+        runOnUiThread(() -> {
+            loadingOverlay.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
+        });
+    }
+
+    private void hideLoading() {
+        runOnUiThread(() -> {
+            loadingOverlay.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+        });
     }
 }

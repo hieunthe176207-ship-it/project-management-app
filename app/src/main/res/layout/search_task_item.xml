@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardUseCompatPadding="true"
+    app:strokeColor="?attr/colorOutline"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Tên task -->
+        <TextView
+            android:id="@+id/tvTaskName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Thiết kế UI đăng nhập"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:maxLines="2"
+            android:ellipsize="end"/>
+
+        <!-- Dòng dự án + deadline -->
+        <TextView
+            android:id="@+id/tvProjectName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Dự án: Project A"
+            android:textSize="13sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginTop="4dp"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <TextView
+            android:id="@+id/tvDeadline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hạn: 2025-11-10 17:00"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginTop="2dp"/>
+
+        <!-- Trạng thái -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipStatus"
+            style="@style/Widget.Material3.Chip.Assist.Elevated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Đang làm"
+            app:chipCornerRadius="12dp"
+            app:chipIconVisible="false"
+            app:ensureMinTouchTargetSize="false"/>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

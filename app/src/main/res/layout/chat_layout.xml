@@ -3,25 +3,27 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
+    android:fitsSystemWindows="true"
     android:layout_height="match_parent">
 
-    <!-- HEADER: MaterialToolbar chứa 1 ConstraintLayout custom -->
+    <!-- HEADER với AppBarLayout để có shadow đẹp hơn -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
-        app:title=""
-        app:contentInsetStartWithNavigation="0dp"
+        android:elevation="4dp"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:menu="@menu/chat_menu"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Nội dung header: dùng ConstraintLayout để căn trái bằng nhau -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/toolbarContent"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
 
+            android:layout_marginStart="8dp"
             android:paddingEnd="12dp">
 
             <de.hdodenhof.circleimageview.CircleImageView
@@ -40,29 +42,29 @@
                 android:id="@+id/tvTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="RealmReader Group"
+                android:text="Group"
                 android:textStyle="bold"
                 android:textSize="16sp"
+                android:layout_marginStart="12dp"
                 app:layout_constraintStart_toEndOf="@id/imgAvatar"
-                app:layout_constraintTop_toTopOf="@id/imgAvatar"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginStart="12dp" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvSubtitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="4 members"
-                android:textSize="12sp"
-                android:textColor="@android:color/darker_gray"
-                app:layout_constraintStart_toStartOf="@id/tvTitle"
-                app:layout_constraintTop_toBottomOf="@id/tvTitle"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
     </com.google.android.material.appbar.MaterialToolbar>
 
-    <!-- LIST: RecyclerView (paddingStart giống header để thẳng hàng) -->
+    <View
+        android:id="@+id/toolbarShadow"
+        android:layout_width="0dp"
+        android:layout_height="8dp"
+        android:background="@drawable/drop_shadow_bottom"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- LIST -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
@@ -77,7 +79,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- INPUT BAR: ConstraintLayout, start/end padding giống nhau -->
+    <!-- INPUT BAR -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/inputBar"
         android:layout_width="0dp"
@@ -94,11 +96,16 @@
             android:id="@+id/tilMessage"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btnSend"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginEnd="8dp">
+            app:boxBackgroundColor="#F2F2F7"
+            app:boxCornerRadiusTopStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusBottomEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edtMessage"
@@ -108,6 +115,7 @@
                 android:textColor="@color/black"
                 android:singleLine="true"
                 android:padding="12dp"/>
+
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -124,5 +132,30 @@
             app:layout_constraintBottom_toBottomOf="@id/tilMessage" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- LOADING OVERLAY -->
+    <View
+        android:id="@+id/loadingOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/white"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

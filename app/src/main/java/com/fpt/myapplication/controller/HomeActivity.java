@@ -48,6 +48,8 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
     private MessageModel messageModel;
     private MaterialCardView btnMessage;
 
+    private MaterialCardView btnSearch;
+
     private UserModel userModel;
 
     private TextView badge;
@@ -96,6 +98,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
         badge = findViewById(R.id.badgeMessage);
 
         btnMessage = findViewById(R.id.btnMessage);
+        btnSearch = findViewById(R.id.btnSearch);
 
 
         UserResponse user = SessionPrefs.get(this).getUser();
@@ -106,6 +109,13 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
         btnMessage.setOnClickListener(
                 v -> {
                     Intent intent = new Intent(HomeActivity.this, ChatGroupActivity.class);
+                    startActivity(intent);
+                }
+        );
+
+        btnSearch.setOnClickListener(
+                v -> {
+                    Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
                     startActivity(intent);
                 }
         );
@@ -137,7 +147,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
             return true;
         });
 
-        getCountMesssge();
+
 
     }
 
@@ -171,6 +181,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
     @Override
     protected void onStart() {
         super.onStart();
+        getCountMesssge();
         WebSocketManager.get().addListener(this);
         WebSocketManager.get().subscribeTopic("/topic/notify/" + user.getId());
     }

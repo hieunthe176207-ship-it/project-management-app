@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_home"
-        android:icon="@drawable/ic_home"
-        android:title="Home" />
+        android:id="@+id/update_act"
+        android:title="Cập nhật dự án" />
 
     <item
-        android:id="@+id/nav_project"
-        android:icon="@drawable/ic_project"
-        android:title="Project" />
+        android:id="@+id/delete_act"
+        android:title="Xóa dự án" />
 </menu>

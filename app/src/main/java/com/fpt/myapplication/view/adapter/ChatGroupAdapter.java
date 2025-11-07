@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fpt.myapplication.R;
 import com.fpt.myapplication.dto.response.ChatGroupResponse;
+import com.fpt.myapplication.util.FileUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +92,7 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<ChatGroupAdapter.VH> 
             // Avatar nhóm (nếu bạn có URL trong g.getAvatar())
             if (g.getAvatar() != null && !g.getAvatar().isEmpty()) {
                 com.bumptech.glide.Glide.with(imgGroup.getContext())
-                        .load(g.getAvatar())
+                        .load(FileUtil.GetImageUrl(g.getAvatar()))
                         .placeholder(R.drawable.ic_group)
                         .error(R.drawable.ic_group)
                         .into(imgGroup);

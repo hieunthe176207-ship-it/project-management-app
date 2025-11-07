@@ -9,7 +9,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 
-public interface TaskApi {
+public interface  TaskApi {
     @GET("task/my-tasks")
     Call<List<TaskResponse>> getMyTasks();
 

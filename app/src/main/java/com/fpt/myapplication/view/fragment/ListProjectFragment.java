@@ -53,8 +53,7 @@ public class ListProjectFragment extends Fragment {
         progress = view.findViewById(R.id.progress);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        DividerItemDecoration div = new DividerItemDecoration(getContext(), RecyclerView.VERTICAL);
-        rv.addItemDecoration(div);
+
         adapter = new ProjectAdapter();
         rv.setAdapter(adapter);
 

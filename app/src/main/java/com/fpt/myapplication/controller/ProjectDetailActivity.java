@@ -3,11 +3,14 @@ package com.fpt.myapplication.controller;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,8 +21,10 @@ import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.response.ProjectResponse;
 import com.fpt.myapplication.model.ProjectModel;
 import com.fpt.myapplication.util.FileUtil;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProjectDetailActivity extends AppCompatActivity {
@@ -40,7 +45,7 @@ public class ProjectDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.project_detail_layout);
-
+        initToolbar();
         projectId = getIntent().getIntExtra("project_id", -1);
 
         initViews();
@@ -120,7 +125,23 @@ public class ProjectDetailActivity extends AppCompatActivity {
             public void onError(ResponseError error) {
                 Log.e("PROJECTDETAIL", "onError: " + error);
                 progress.setVisibility(View.GONE);
-                overlay.setVisibility(View.GONE);
+
+
+                SweetAlertDialog dlg = new SweetAlertDialog(ProjectDetailActivity.this, SweetAlertDialog.ERROR_TYPE)
+                        .setTitleText("Có lỗi xảy ra")
+                        .setContentText(error.message)
+                        .setConfirmText("Về trang chủ")
+                        .setConfirmClickListener(s -> {
+                            s.dismissWithAnimation();
+                            Intent i = new Intent(ProjectDetailActivity.this, HomeActivity.class);
+                            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(i);
+                            finish(); // đóng ProjectDetailActivity
+                        });
+
+                dlg.setCancelable(false);              // chặn nút Back
+                dlg.setCanceledOnTouchOutside(false);  // chặn chạm ra ngoài
+                dlg.show();
             }
 
             @Override
@@ -191,11 +212,44 @@ public class ProjectDetailActivity extends AppCompatActivity {
         }
     }
 
+
     private void loadAvatar(String url, ImageView target) {
         Glide.with(target.getContext())
                 .load(FileUtil.GetImageUrl(url))
                 .placeholder(R.drawable.default_avatar)
                 .error(R.drawable.default_avatar)
                 .into(target);
+    }
+
+    private void initToolbar() {
+        MaterialToolbar toolbar = findViewById(R.id.toolbarProject);
+
+        // Nút back
+        toolbar.setNavigationOnClickListener(v ->
+                getOnBackPressedDispatcher().onBackPressed()
+        );
+
+        // Bắt click menu ngay trên Toolbar
+        toolbar.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.update_act) {
+                startActivity(new Intent(this, UpdateProjectActivity.class));
+                return true;
+            } else if (id == R.id.delete_act) {
+                new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+                        .setTitleText("Xoá dự án?")
+                        .setContentText("Bạn chắc chắn muốn xoá?")
+                        .setCancelText("Huỷ")
+                        .setConfirmText("Xoá")
+                        .setCancelClickListener(SweetAlertDialog::dismissWithAnimation)
+                        .setConfirmClickListener(d -> {
+                            d.dismissWithAnimation();
+                            Toast.makeText(this, "Đã xoá dự án (demo)", Toast.LENGTH_SHORT).show();
+                        })
+                        .show();
+                return true;
+            }
+            return false;
+        });
     }
 }
