@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp">
+
+    <LinearLayout
+        android:id="@+id/dayContainer"
+        android:layout_width="40dp"
+        android:layout_height="54dp"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingTop="2dp">
+
+        <TextView
+            android:id="@+id/tvDayNumber"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#424242"
+            android:background="@drawable/bg_day_unselected" />
+
+        <View
+            android:id="@+id/dotIndicator"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/dot_task_indicator"
+            android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

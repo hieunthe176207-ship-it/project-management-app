@@ -9,8 +9,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.fpt.myapplication.api.TaskApi;
 import com.fpt.myapplication.config.ApiClient;
+import com.fpt.myapplication.dto.request.CreateTaskRequest;
 import com.fpt.myapplication.dto.response.TaskResponse;
 
+import java.util.Collections;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -41,6 +43,22 @@ public class MyTaskViewModel extends AndroidViewModel {
             @Override
             public void onFailure(Call<List<TaskResponse>> call, Throwable t) {
                 _myTasks.postValue(null);
+            }
+        });
+    }
+
+    public void createTask(String title, String desc, String dueDate, int projectId) {
+        CreateTaskRequest req = new CreateTaskRequest(title, desc, dueDate, projectId, Collections.emptyList());
+        taskApi.createTask(req).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    fetchMyTasks(); // refresh sau khi tạo
+                }
+            }
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                // Có thể post một LiveData error riêng nếu cần
             }
         });
     }

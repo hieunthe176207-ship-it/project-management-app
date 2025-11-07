@@ -96,6 +96,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
         badge = findViewById(R.id.badgeMessage);
 
         btnMessage = findViewById(R.id.btnMessage);
+        MaterialCardView btnCalendar = findViewById(R.id.btnCalendar);
 
 
         UserResponse user = SessionPrefs.get(this).getUser();
@@ -136,6 +137,12 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
             }
             return true;
         });
+
+        if (btnCalendar != null) {
+            btnCalendar.setOnClickListener(v -> {
+                startActivity(new Intent(HomeActivity.this, TaskCalendarActivity.class));
+            });
+        }
 
         getCountMesssge();
 

@@ -94,7 +94,7 @@ public class ProjectDetailActivity extends AppCompatActivity {
         View cardTask = findViewById(R.id.cardCongViec);
         cardTask.setOnClickListener(v -> {
             if (projectId == -1) return;
-            Intent i = new Intent(ProjectDetailActivity.this, TaskActivity.class);
+            Intent i = new Intent(ProjectDetailActivity.this, ProjectTaskListActivity.class);
             i.putExtra("project_id", projectId);
             startActivity(i);
         });

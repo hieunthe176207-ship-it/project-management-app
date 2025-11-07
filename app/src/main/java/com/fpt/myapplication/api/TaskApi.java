@@ -8,6 +8,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface TaskApi {
     @GET("task/my-tasks")
@@ -15,4 +16,10 @@ public interface TaskApi {
 
     @POST("task/create")
     Call<Void> createTask(@Body CreateTaskRequest data);
+
+    @GET("task/project/{projectId}")
+    Call<List<TaskResponse>> getTasksByProject(@Path("projectId") int projectId);
+
+    @GET("task/{id}")
+    Call<TaskResponse> getTaskById(@Path("id") int id);
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/fpt/myapplication/dto/response/TaskResponse.java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/fpt/myapplication/dto/response/TaskResponse.java" />
+              <option name="originalContent" value="package com.fpt.myapplication.dto.response;&#10;&#10;import com.fpt.myapplication.constant.TaskStatus;&#10;import com.google.gson.annotations.SerializedName;&#10;import java.util.Set;&#10;public class TaskResponse {&#10;    @SerializedName(&quot;id&quot;)&#10;    private Integer id;&#10;&#10;    @SerializedName(&quot;title&quot;)&#10;    private String title;&#10;&#10;    @SerializedName(&quot;status&quot;)&#10;    private TaskStatus status;&#10;&#10;    @SerializedName(&quot;project&quot;)&#10;    private TaskProjectResponse project;&#10;&#10;    @SerializedName(&quot;createdBy&quot;)&#10;    private UserResponse createdBy;&#10;&#10;    @SerializedName(&quot;assignees&quot;)&#10;    private Set&lt;UserResponse&gt; assignees;&#10;&#10;    public Integer getId() {&#10;        return id;&#10;    }&#10;    public String getTitle() {&#10;        return title;&#10;    }&#10;    public TaskStatus getStatus() {&#10;        return status;&#10;    }&#10;    public TaskProjectResponse getProject() {&#10;        return project;&#10;    }&#10;    public UserResponse getCreatedBy() {&#10;        return createdBy;&#10;    }&#10;    public Set&lt;UserResponse&gt; getAssignees() {&#10;        return assignees;&#10;    }&#10;}&#10;" />
+              <option name="updatedContent" value="package com.fpt.myapplication.dto.response;&#10;&#10;import com.fpt.myapplication.constant.TaskStatus;&#10;import com.google.gson.annotations.SerializedName;&#10;import java.util.Set;&#10;public class TaskResponse {&#10;    @SerializedName(&quot;id&quot;)&#10;    private Integer id;&#10;&#10;    @SerializedName(&quot;title&quot;)&#10;    private String title;&#10;&#10;    @SerializedName(&quot;status&quot;)&#10;    private TaskStatus status;&#10;&#10;    @SerializedName(&quot;project&quot;)&#10;    private TaskProjectResponse project;&#10;&#10;    @SerializedName(&quot;createdBy&quot;)&#10;    private UserResponse createdBy;&#10;&#10;    @SerializedName(&quot;assignees&quot;)&#10;    private Set&lt;UserResponse&gt; assignees;&#10;&#10;    public Integer getId() {&#10;        return id;&#10;    }&#10;    public String getTitle() {&#10;        return title;&#10;    }&#10;    public TaskStatus getStatus() {&#10;        return status;&#10;    }&#10;    public TaskProjectResponse getProject() {&#10;        return project;&#10;    }&#10;    public UserResponse getCreatedBy() {&#10;        return createdBy;&#10;    }&#10;    public Set&lt;UserResponse&gt; getAssignees() {&#10;        return assignees;&#10;    }&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
