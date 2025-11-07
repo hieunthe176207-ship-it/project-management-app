@@ -39,5 +39,15 @@
     <color name="shadowColor">#1A0F172A</color>
     <color name="chip_deadline_bg">#FAF2F2</color>
 
-
+    <!-- Status chip On Going -->
+    <color name="status_ongoing_bg">#E5F7EB</color>
+    <color name="status_ongoing_text">#1B6A34</color>
+    <color name="status_todo_bg">#FFF4E5</color>
+    <color name="status_todo_text">#8A4D00</color>
+    <color name="status_in_progress_bg">#E5F0FF</color>
+    <color name="status_in_progress_text">#004A99</color>
+    <color name="status_done_bg">#E5F6FF</color>
+    <color name="status_done_text">#005E6A</color>
+    <color name="status_in_review_bg">#F3E5FF</color>
+    <color name="status_in_review_text">#5A00A3</color>
 </resources>

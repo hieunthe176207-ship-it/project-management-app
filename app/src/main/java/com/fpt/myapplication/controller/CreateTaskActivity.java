@@ -1,5 +1,6 @@
 package com.fpt.myapplication.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.TextView;
@@ -120,18 +121,17 @@ public class CreateTaskActivity extends AppCompatActivity {
 
                 taskModel.createTask(request, new TaskModel.CreateTaskCallBack() {
                     @Override
-                    public void onSuccess() {
-
+                    public void onSuccess(Integer id) {
                         btnCreate.setEnabled(true);
                         btnCancel.setEnabled(true);
                         btnCreate.setText("Tạo");
 
-                        new SweetAlertDialog(CreateTaskActivity.this, SweetAlertDialog.SUCCESS_TYPE)
-                                .setTitleText("Thông báo")
-                                .setContentText("Đã tạo thành công công việc!")
-                                .setConfirmText("OK")
-                                .show();
+                        Intent i = new Intent(CreateTaskActivity.this, TaskActivity.class);
+                        i.putExtra("task_id", id);
+                        startActivity(i);
+                        finish();
                     }
+
                     @Override
                     public void onError(ResponseError error) {
                         btnCreate.setEnabled(true);
@@ -153,6 +153,28 @@ public class CreateTaskActivity extends AppCompatActivity {
                     }
                 });
 
+
+//
+//
+//                    }
+//                    @Override
+//                    public void onError(ResponseError error) {
+//                        btnCreate.setEnabled(true);
+//                        btnCancel.setEnabled(true);
+//                        btnCreate.setText("Hủy");
+//
+//                        new SweetAlertDialog(CreateTaskActivity.this, SweetAlertDialog.ERROR_TYPE)
+//                                .setTitleText("Thông báo")
+//                                .setContentText(error.message)
+//                                .setConfirmText("OK")
+//                                .show();
+//                    }
+//
+//                    @Override
+//                    public void onLoading() {
+//                        btnCreate.setEnabled(false);
+//                        btnCancel.setEnabled(false);
+//                        btnCreate.setText("Đang tạo...");
             }
         });
 

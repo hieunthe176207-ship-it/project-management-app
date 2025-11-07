@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvAssigneeName"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="8dp"
+    android:text="@string/assignee_name_placeholder"
+    android:textSize="12sp"
+    android:background="@drawable/bg_chip_in_progress"
+    android:textColor="@color/status_in_progress_text"
+    android:maxLines="1"
+    android:ellipsize="end" />
+
