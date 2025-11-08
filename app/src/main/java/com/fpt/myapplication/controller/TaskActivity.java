@@ -36,9 +36,10 @@ public class TaskActivity extends AppCompatActivity {
     private ActivityTaskDetailBinding binding;
     private SubTaskAdapter subTaskAdapter;
     private TaskModel model;
-
     private int taskId;
     private int projectId;
+
+    private TaskDetailResponse currentTaskDetail;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,9 +56,9 @@ public class TaskActivity extends AppCompatActivity {
 
             if (id == R.id.update_act) {
                 Intent intent = new Intent(this, CreateTaskActivity.class);
-                intent.putExtra("task_id", taskId);
+                intent.putExtra("task_id", currentTaskDetail.getId());
                 intent.putExtra("is_edit", true);
-                intent.putExtra("project_id", projectId);
+                intent.putExtra("project_id", currentTaskDetail.getProjectId());
                 startActivity(intent);
                 return true;
             } else if (id == R.id.to_act) {
@@ -164,8 +165,14 @@ public class TaskActivity extends AppCompatActivity {
 
         // Nút: thêm subtask (dialog cực đơn giản)
         binding.btnAddSubtask.setOnClickListener(v -> showAddSubtaskDialog());
-        fetchData();
+
         // Load dữ liệu thật
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        fetchData();
     }
 
     private void fetchData() {
@@ -177,9 +184,9 @@ public class TaskActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(TaskDetailResponse data) {
+                currentTaskDetail = data;
                 showLoading(false);
                 if (data == null) {
-                    showError("Không có dữ liệu công việc.");
                     return;
                 }
                 bindTask(data);

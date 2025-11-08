@@ -24,4 +24,5 @@ public class TaskDetailResponse {
     String status;
     List<SubTaskResponse> subTasks;
     List<UserResponse> assignees;
+    Integer projectId;
 }

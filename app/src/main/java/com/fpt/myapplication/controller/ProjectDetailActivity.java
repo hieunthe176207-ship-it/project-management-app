@@ -31,7 +31,7 @@ public class ProjectDetailActivity extends AppCompatActivity {
 
     private ProjectModel model;
     private TextView tvTitle, tvDescription, tvCreatorName, tvCreatorEmail, tvCount, badgePendingCount;
-    private Chip chipDeadline;
+    private Chip chipDeadline, chipVisibility;
     private ImageView imgCreatorAvatar;
     private FrameLayout overlay;
     private View cardJoinRequests;
@@ -77,6 +77,7 @@ public class ProjectDetailActivity extends AppCompatActivity {
         overlayCount = findViewById(R.id.overlayCount);
         cardJoinRequests = findViewById(R.id.cardJoinRequests);
         badgePendingCount = findViewById(R.id.badgePendingCount);
+        chipVisibility = findViewById(R.id.chipVisibility);
     }
 
     private void setupClickListeners() {
@@ -163,6 +164,8 @@ public class ProjectDetailActivity extends AppCompatActivity {
                 badgePendingCount.setVisibility(View.GONE);
             }
         }
+
+        chipVisibility.setText(data.getIsPublic() == 1 ? "Công khai" : "Riêng tư");
 
         tvDescription.setText(data.getDescription());
         tvTitle.setText(data.getName());
