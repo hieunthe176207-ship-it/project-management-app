@@ -23,7 +23,6 @@
             app:civ_border_width="2dp"
             app:civ_border_color="?attr/colorPrimary" />
 
-        <!-- Nút chọn ảnh -->
         <ImageButton
             android:id="@+id/btnPickAvatar"
             android:layout_width="36dp"
@@ -34,20 +33,14 @@
             android:src="@drawable/ic_photo"
             android:scaleType="centerInside"
             android:background="@drawable/bg_btn_avatar"
-            android:contentDescription="Đổi avatar"
-             />
+            android:contentDescription="Đổi ảnh đại diện" />
     </FrameLayout>
-
-
-    <!-- (Tùy chọn) Nút đổi ảnh nhỏ đè lên avatar -->
-
-
 
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Hiếu nguyễn "
+        android:text="Hiếu Nguyễn"
         android:textStyle="bold"
         android:textSize="22sp"
         app:layout_constraintTop_toBottomOf="@id/avatarLayout"
@@ -56,13 +49,12 @@
         android:layout_marginTop="16dp"
         android:gravity="center" />
 
-    <!-- Email (chỉ đọc) -->
+    <!-- Email (không thể thay đổi) -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilEmail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:enabled="false"
-
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -78,7 +70,19 @@
             android:maxLines="1"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Display name (có thể sửa) -->
+    <TextView
+        android:id="@+id/tvEmailNote"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Email không thể thay đổi"
+        android:textSize="12sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/tilEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Tên hiển thị -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilDisplayName"
         android:layout_width="0dp"
@@ -86,7 +90,7 @@
         app:counterEnabled="true"
         app:counterMaxLength="40"
         app:boxBackgroundMode="filled"
-        app:layout_constraintTop_toBottomOf="@id/tilEmail"
+        app:layout_constraintTop_toBottomOf="@id/tvEmailNote"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp">
@@ -95,7 +99,7 @@
             android:id="@+id/etDisplayName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nhập tên"
+            android:hint="Tên hiển thị"
             android:textColor="@color/black"
             android:inputType="textPersonName"
             android:maxLines="1"/>
@@ -106,10 +110,24 @@
         android:id="@+id/btnSave"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Save"
+        android:text="Lưu thông tin"
         app:layout_constraintTop_toBottomOf="@id/tilDisplayName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
+
+    <!-- Nút Đăng xuất -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLogout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Đăng xuất"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        app:strokeColor="@color/design_default_color_error"
+        android:textColor="@color/design_default_color_error"
+        app:layout_constraintTop_toBottomOf="@id/btnSave"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

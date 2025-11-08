@@ -16,11 +16,12 @@
         android:paddingEnd="16dp"
         android:text="Tạo công việc mới"
         android:textSize="18sp"
-
         android:drawableStart="@drawable/ic_arrow_back"
         android:drawablePadding="12dp"
         android:clickable="true"
-        android:focusable="true" />
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground" />
+
 
     <!-- Form: để wrap_content, KHÔNG dùng weight (tránh chèn lên RecyclerView) -->
     <ScrollView

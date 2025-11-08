@@ -21,12 +21,15 @@ import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.request.ProjectCreateRequest;
 import com.fpt.myapplication.dto.response.UserResponse;
 import com.fpt.myapplication.model.MessageModel;
+import com.fpt.myapplication.model.NotificationModel;
 import com.fpt.myapplication.model.ProjectModel;
 import com.fpt.myapplication.model.UserModel;
 import com.fpt.myapplication.util.SessionPrefs;
 import com.fpt.myapplication.view.bottomSheet.AddProjectBottomSheet;
+import com.fpt.myapplication.view.fragment.InfomationFragment;
 import com.fpt.myapplication.view.fragment.ListProjectFragment;
 import com.fpt.myapplication.view.fragment.ListPublicProjectFragment;
+import com.fpt.myapplication.view.fragment.MyTaskFragment;
 import com.fpt.myapplication.view.fragment.NotificationFragment;
 import com.fpt.myapplication.view.fragment.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -49,9 +52,12 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
 
     private MaterialCardView btnSearch;
 
-    private UserModel userModel;
+    private MaterialCardView btnBell;
 
-    private TextView badge;
+    private UserModel userModel;
+    private NotificationModel notificationModel;
+
+    private TextView badge, badgeBell;
 
     private UserResponse user;
 
@@ -75,6 +81,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
         setContentView(R.layout.home_layout);
         user = SessionPrefs.get(this).getUser();
         userModel = new UserModel(this);
+        notificationModel = new NotificationModel(this);
         messageModel = new MessageModel(this);
 
         ensureNotificationPermission();
@@ -95,7 +102,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
         TextView tvGreeting = findViewById(R.id.tvGreeting);
 
         badge = findViewById(R.id.badgeMessage);
-
+        badgeBell = findViewById(R.id.badgeBell);
         btnMessage = findViewById(R.id.btnMessage);
         btnSearch = findViewById(R.id.btnSearch);
         MaterialCardView btnCalendar = findViewById(R.id.btnCalendar);
@@ -120,6 +127,14 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
                 }
         );
 
+        btnBell = findViewById(R.id.btnBell);
+        btnBell.setOnClickListener(
+                v -> {
+                    Intent intent = new Intent(HomeActivity.this, NotificationsActivity.class);
+                    startActivity(intent);
+                }
+        );
+
 
         fab.setOnClickListener(v -> {
             new AddProjectBottomSheet()
@@ -139,10 +154,10 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
                 setCurrentFragment(new ListPublicProjectFragment(), "profile");
             }
             else if(item.getItemId() == R.id.nav_discussion){
-                setCurrentFragment(new NotificationFragment(), "discuss");
+                setCurrentFragment(new MyTaskFragment(), "my_task");
             }
             else{
-                setCurrentFragment(new ProfileFragment(), "profile");
+                setCurrentFragment(new InfomationFragment(), "profile");
             }
             return true;
         });
@@ -153,7 +168,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
             });
         }
 
-        getCountMesssge();
+
 
     }
 
@@ -188,7 +203,10 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
     protected void onStart() {
         super.onStart();
         WebSocketManager.get().addListener(this);
+        WebSocketManager.get().subscribeTopic("/topic/notify/message/" + user.getId());
         WebSocketManager.get().subscribeTopic("/topic/notify/" + user.getId());
+        getCountMesssge();
+        getCountNotifications();
     }
 
     @Override
@@ -208,9 +226,44 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
 
     @Override
     public void onNewMessage(String topic, String payload) {
-        if(topic.startsWith("/topic/notify/")) {
+        Log.d("SOCKET_R", "onNewMessage: "+ topic);
+        if(topic.startsWith("/topic/notify/message")) {
             Log.d("HomeActivity", "onNewMessage: " + payload);
-            runOnUiThread(this::getCountMesssge);
+            // Cập nhật badge tin nhắn
+            if(badge.getText() == null || badge.getText().toString().isEmpty()){
+                runOnUiThread(() -> {
+                    badge.setText("1");
+                    badge.setVisibility(View.VISIBLE);
+                });
+            }
+            else{
+                int count = Integer.parseInt(badge.getText().toString());
+                count += 1;
+                final int finalCount = count;
+                runOnUiThread(() -> {
+                    badge.setText(String.valueOf(finalCount));
+                    badge.setVisibility(View.VISIBLE);
+                });
+            }
+        }
+        if(topic.equals("/topic/notify/"+user.getId())) {
+            Log.d("SOCKET_R", "onNewNotify: "+ topic);
+            // Cập nhật badge thông báo
+            if(badgeBell.getText() == null || badgeBell.getText().toString().isEmpty()){
+                runOnUiThread(() -> {
+                    badgeBell.setText("1");
+                    badgeBell.setVisibility(View.VISIBLE);
+                });
+            }
+            else{
+                int count = Integer.parseInt(badgeBell.getText().toString());
+                count += 1;
+                final int finalCount = count;
+                runOnUiThread(() -> {
+                    badgeBell.setText(String.valueOf(finalCount));
+                    badgeBell.setVisibility(View.VISIBLE);
+                });
+            }
         }
     }
 
@@ -241,7 +294,37 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
                 }
             }
         });
+    }
 
+    private void getCountNotifications() {
+        badgeBell.setText("0");
+        badgeBell.setVisibility(View.GONE);
+
+        notificationModel.countUnreadNotifications(new NotificationModel.CountUnreadNotificationsCallback() {
+            @Override
+            public void onSuccess(int count) {
+                if(count <= 0){
+                    badgeBell.setVisibility(View.GONE);
+                }
+                else{
+                    badgeBell.setText(String.valueOf(count));
+
+                    badgeBell.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onError(ResponseError error) {
+
+            }
+
+            @Override
+            public void onLoading() {
+
+            }
+        });
+        // Tương tự, bạn có thể gọi model để lấy số lượng thông báo chưa đọc
+        // và cập nhật badgeBell tương tự như badge ở trên
     }
 
     private void createProject(String name, String desc, String due, int isPublic) {
@@ -275,6 +358,8 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
             }
         });
     }
+
+
 
     private void updateFcmToken(){
         FirebaseMessaging.getInstance().getToken()

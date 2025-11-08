@@ -18,17 +18,43 @@
         android:layout_height="wrap_content"
         android:padding="12dp">
 
-        <!-- Tiêu đề task -->
-        <TextView
-            android:id="@+id/tv_title"
+        <!-- Container cho tiêu đề và trạng thái quá hạn -->
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Create Figma"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:textColor="#000000" />
+            android:layout_height="wrap_content">
+
+            <!-- Tiêu đề task -->
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/tv_overdue"
+                android:layout_marginEnd="8dp"
+                android:text="Create Figma"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:textColor="#000000" />
+
+            <!-- TextView quá hạn ở góc trên bên phải -->
+            <TextView
+                android:id="@+id/tv_overdue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="Quá hạn"
+                android:textSize="11sp"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_status_overdue"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:visibility="visible"
+                android:fontFamily="sans-serif-medium" />
+
+        </RelativeLayout>
 
         <!-- Dự án: Ẩn theo yêu cầu -->
         <TextView
@@ -40,7 +66,7 @@
         <!-- Hạn hoàn thành -->
         <TextView
             android:id="@+id/tv_deadline"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="Hạn: 08/11/2025"
@@ -62,8 +88,6 @@
             android:textColor="#1565C0"
             android:background="@drawable/bg_chip_todo"
             android:fontFamily="sans-serif-medium" />
-
-        <!-- TODO Backend: thay tv_deadline bằng dueDate thật (format dd/MM/yyyy) -->
 
     </LinearLayout>
 

@@ -16,6 +16,8 @@ public class TaskResponse {
     @SerializedName("id")
     private Integer id;
 
+    private String description;
+
     @SerializedName("title")
     private String title;
 

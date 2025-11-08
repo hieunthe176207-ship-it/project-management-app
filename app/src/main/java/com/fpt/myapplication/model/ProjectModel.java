@@ -8,6 +8,7 @@ import com.fpt.myapplication.config.ApiClient;
 import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.request.ProjectCreateRequest;
+import com.fpt.myapplication.dto.request.UpdateProjectRequest;
 import com.fpt.myapplication.dto.response.ProjectResponse;
 import com.fpt.myapplication.dto.response.SearchResponse;
 import com.fpt.myapplication.dto.response.UserResponse;
@@ -97,6 +98,12 @@ public class ProjectModel {
 
     public interface GlobalSearchCallBack{
         void onSuccess(SearchResponse data);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface UpdateProjectCallBack{
+        void onSuccess(ResponseSuccess data);
         void onError(ResponseError error);
         void onLoading();
     }
@@ -365,6 +372,28 @@ public class ProjectModel {
 
             @Override
             public void onFailure(Call<ResponseSuccess<SearchResponse>> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    public void updateProject (int projectId, UpdateProjectRequest body, UpdateProjectCallBack cb){
+        cb.onLoading();
+        projectApi.updateProject(projectId, body).enqueue(new Callback<ResponseSuccess>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess data = response.body();
+                    cb.onSuccess(data);
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess> call, Throwable throwable) {
 
             }
         });

@@ -7,6 +7,7 @@ import com.fpt.myapplication.api.UserApi;
 import com.fpt.myapplication.config.ApiClient;
 import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.ResponseSuccess;
+import com.fpt.myapplication.dto.request.ChangePasswordRequest;
 import com.fpt.myapplication.dto.response.UserResponse;
 import com.fpt.myapplication.util.Util;
 
@@ -42,6 +43,12 @@ public class UserModel {
     }
 
     public interface UpdateTokenFCMCallBack{
+        void onLoading();
+        void onSuccess();
+        void onError(ResponseError error);
+    }
+
+    public interface ChangePasswordCallBack{
         void onLoading();
         void onSuccess();
         void onError(ResponseError error);
@@ -124,6 +131,27 @@ public class UserModel {
     public void updateTokenFCM(String token, UpdateTokenFCMCallBack cb){
         cb.onLoading();
         userApi.updateTokenFCM(token).enqueue(new Callback<ResponseSuccess>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
+                if(response.isSuccessful()){
+                    cb.onSuccess();
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess> call, Throwable throwable) {
+                Log.e(TAG, "onFailure: "+ throwable );
+            }
+        });
+    }
+
+    public void ChangePassword(ChangePasswordRequest request, ChangePasswordCallBack cb){
+        cb.onLoading();
+        userApi.changePassword(request).enqueue(new Callback<ResponseSuccess>() {
             @Override
             public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
                 if(response.isSuccessful()){

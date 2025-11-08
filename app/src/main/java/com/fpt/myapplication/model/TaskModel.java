@@ -9,9 +9,13 @@ import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.request.CreateSubTaskRequest;
 import com.fpt.myapplication.dto.request.CreateTaskRequest;
+import com.fpt.myapplication.dto.request.TaskUpdateStatusRequestDto;
+import com.fpt.myapplication.dto.request.UpdateTaskRequest;
 import com.fpt.myapplication.dto.response.SubTaskResponse;
 import com.fpt.myapplication.dto.response.TaskDetailResponse;
 import com.fpt.myapplication.dto.response.TaskResponse;
+import com.fpt.myapplication.dto.response.TaskResponseDto;
+import com.fpt.myapplication.dto.response.UpdateTaskReponse;
 import com.fpt.myapplication.util.Util;
 
 import java.util.List;
@@ -55,6 +59,30 @@ public class TaskModel {
 
     public interface UpdateSubTaskCompletedCallBack{
         void onSuccess();
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface UpdateTaskCallBack{
+        void onSuccess(Integer id);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface UpdateTaskStatusCallBack{
+        void onSuccess();
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface DeleteTaskCallBack{
+        void onSuccess();
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface GetMyTasksCallBack{
+        void onSuccess(List<TaskResponseDto> data);
         void onError(ResponseError error);
         void onLoading();
     }
@@ -162,6 +190,88 @@ public class TaskModel {
             @Override
             public void onFailure(Call<Void> call, Throwable throwable) {
                 Log.e("UPDATE_SUB_TASK", "onFailure: "+ throwable.getMessage() );
+            }
+        });
+    }
+
+    public void updateTask(UpdateTaskRequest data, UpdateTaskCallBack callBack){
+        callBack.onLoading();
+        taskApi.updateTask(data).enqueue(new Callback<ResponseSuccess<Integer>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<Integer>> call, Response<ResponseSuccess<Integer>> response) {
+                if(response.isSuccessful()){
+                    Integer id = response.body().getData();
+                    callBack.onSuccess(id);
+                } else {
+                    ResponseError error = Util.parseError(response);
+                    callBack.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<Integer>> call, Throwable throwable) {
+                Log.e("UPDATE_TASK", "onFailure: "+ throwable.getMessage() );
+            }
+        });
+    }
+
+    public void updateTaskStatus(int taskId, TaskUpdateStatusRequestDto data, UpdateTaskStatusCallBack callBack){
+        callBack.onLoading();
+        taskApi.updateTaskStatus(taskId, data).enqueue(new Callback<ResponseSuccess<UpdateTaskReponse>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<UpdateTaskReponse>> call, Response<ResponseSuccess<UpdateTaskReponse>> response) {
+                if(response.isSuccessful()){
+                    callBack.onSuccess();
+                } else {
+                    ResponseError error = Util.parseError(response);
+                    callBack.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<UpdateTaskReponse>> call, Throwable throwable) {
+                Log.e("UPDATE_TASK", "onFailure: "+ throwable.getMessage() );
+            }
+        });
+    }
+
+    public void deleteTask(int taskId, DeleteTaskCallBack callBack){
+        callBack.onLoading();
+        taskApi.deleteTask(taskId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if(response.isSuccessful()){
+                    callBack.onSuccess();
+                } else {
+                    ResponseError error = Util.parseError(response);
+                    callBack.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable throwable) {
+                Log.e("DELETE_TASK", "onFailure: "+ throwable.getMessage() );
+            }
+        });
+    }
+
+    public void getMyTasks(GetMyTasksCallBack callBack){
+        callBack.onLoading();
+        taskApi.getMyTasks().enqueue(new Callback<ResponseSuccess<List<TaskResponseDto>>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<List<TaskResponseDto>>> call, Response<ResponseSuccess<List<TaskResponseDto>>> response) {
+                if(response.isSuccessful()){
+                    List<TaskResponseDto> data = response.body().getData();
+                    callBack.onSuccess(data);
+                } else {
+                    ResponseError error = Util.parseError(response);
+                    callBack.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<List<TaskResponseDto>>> call, Throwable throwable) {
+
             }
         });
     }

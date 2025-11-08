@@ -1,16 +1,34 @@
 package com.fpt.myapplication.controller;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.GestureDetector;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.fpt.myapplication.R;
-import com.fpt.myapplication.view.adapter.CalendarTaskAdapter;
+import com.fpt.myapplication.dto.ResponseError;
+import com.fpt.myapplication.dto.response.TaskResponseDto;
+import com.fpt.myapplication.model.TaskModel;
+import com.fpt.myapplication.view.adapter.SearchTaskAdapter;
+
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -18,196 +36,271 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.LayoutInflater;
-import androidx.annotation.NonNull;
-import android.graphics.Color;
-import android.view.Window;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.animation.ObjectAnimator;
-import android.animation.AnimatorSet;
 
 public class TaskCalendarActivity extends AppCompatActivity {
+
     private TextView tvMonthTitle, tvSelectedDateBar;
     private RecyclerView rvCalendarDays, rvTasksForDate;
     private ImageView btnPrevMonth, btnNextMonth;
+
     private final Calendar currentCal = Calendar.getInstance();
     private final List<DayItem> dayItems = new ArrayList<>();
-    private DayAdapter dayAdapter;
-    private CalendarTaskAdapter taskAdapter;
-    private Date selectedDate;
-    private static final Map<Integer,Integer> dayTaskCount = new HashMap<>();
+    private DayGridAdapter dayAdapter;
+    private TaskModel model;
+
+    // DỮ LIỆU TASK
+    private final List<TaskResponseDto> allTasks = new ArrayList<>();
+    private final Map<Integer,Integer> dayTaskCount = new HashMap<>();
+
+    // LIST ADAPTER (dùng SearchTaskAdapter)
+    private SearchTaskAdapter taskAdapter;
+
     private GestureDetector gestureDetector;
+
+    private static final DateTimeFormatter ISO_LOCAL = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
+    private static final SimpleDateFormat MONTH_TITLE_FMT = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+    private static final SimpleDateFormat SELECTED_BAR_FMT = new SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault());
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_calendar);
+        if (getSupportActionBar() != null) getSupportActionBar().hide();
+
+        model = new TaskModel(this);
         tvMonthTitle = findViewById(R.id.tvMonthTitle);
         tvSelectedDateBar = findViewById(R.id.tvSelectedDateBar);
         rvCalendarDays = findViewById(R.id.rvCalendarDays);
         rvTasksForDate = findViewById(R.id.rvTasksForDate);
         btnPrevMonth = findViewById(R.id.btnPrevMonth);
         btnNextMonth = findViewById(R.id.btnNextMonth);
-        if (getSupportActionBar() != null) getSupportActionBar().hide(); // ẩn thanh action bar
-        setupCalendar();
-        setupTasksList();
+
+        // Lưới lịch
+        rvCalendarDays.setLayoutManager(new GridLayoutManager(this, 7));
+        dayAdapter = new DayGridAdapter();
+        rvCalendarDays.setAdapter(dayAdapter);
+
+
+
+        // Danh sách task: dùng SearchTaskAdapter (grid 2 cột)
+        taskAdapter = new SearchTaskAdapter(item -> {
+            Intent i = new Intent(TaskCalendarActivity.this, TaskActivity.class);
+            i.putExtra("task_id", item.getId());
+            startActivity(i);
+        });
+        SearchTaskAdapter.setupAsTwoColumns(rvTasksForDate);
+        rvTasksForDate.setAdapter(taskAdapter);
+
+        // Điều hướng tháng
         btnPrevMonth.setOnClickListener(v -> changeMonth(-1));
         btnNextMonth.setOnClickListener(v -> changeMonth(1));
-        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener(){
-            private static final int SWIPE_THRESHOLD = 120;
-            private static final int SWIPE_VELOCITY_THRESHOLD = 120;
-            @Override public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                float diffX = e2.getX() - e1.getX();
-                if (Math.abs(diffX) > Math.abs(e2.getY()-e1.getY())) {
-                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                        if (diffX < 0) changeMonth(1); else changeMonth(-1);
-                        return true;
-                    }
+        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            private static final int S = 120;
+            @Override public boolean onFling(MotionEvent e1, MotionEvent e2, float vx, float vy) {
+                float dx = e2.getX() - e1.getX();
+                if (Math.abs(dx) > Math.abs(vy) && Math.abs(dx) > S && Math.abs(vx) > S) {
+                    if (dx < 0) changeMonth(1); else changeMonth(-1);
+                    return true;
                 }
                 return false;
             }
         });
         rvCalendarDays.setOnTouchListener((v, ev) -> gestureDetector.onTouchEvent(ev));
-    }
 
-    private void setupCalendar() {
-        rvCalendarDays.setLayoutManager(new GridLayoutManager(this, 7));
-        dayAdapter = new DayAdapter(dayItems, this::onDaySelected);
-        rvCalendarDays.setAdapter(dayAdapter);
+        // Render tháng + nạp dữ liệu
         buildMonthDays();
+        loadAllMyTasks(); // => có mock data mẫu bên dưới
     }
 
-    private void setupTasksList() {
-        rvTasksForDate.setLayoutManager(new LinearLayoutManager(this));
-        taskAdapter = new CalendarTaskAdapter();
-        rvTasksForDate.setAdapter(taskAdapter);
-        updateSelectedDate(new Date());
+    /* =========================================================
+       LOAD DATA (hiện tạo MOCK để bạn thấy dot + filter)
+       Thay thế bằng gọi API thật là xong.
+       ========================================================= */
+    private void loadAllMyTasks() {
+        allTasks.clear();
+
+        model.getMyTasks(new TaskModel.GetMyTasksCallBack() {
+            @Override
+            public void onSuccess(List<TaskResponseDto> data) {
+                allTasks.clear();
+                allTasks.addAll(data);
+                afterDataLoaded();
+            }
+
+            @Override
+            public void onError(ResponseError error) {
+                allTasks.clear();
+                afterDataLoaded();
+                // TODO: Hiển thị thông báo lỗi nếu cần
+            }
+
+            @Override
+            public void onLoading() {
+                // TODO: Hiển thị loading nếu cần
+            }
+        });
+
+        // Sau khi có data -> cập nhật dot và chọn ngày
+        afterDataLoaded();
+    }
+
+    private void afterDataLoaded() {
+        rebuildCountsForCurrentMonth();
+        dayAdapter.notifyDataSetChanged();
+
+        Calendar today = Calendar.getInstance();
+        if (sameYearMonth(today, currentCal)) {
+            int idx = firstDayOffsetOfMonth(currentCal) + (today.get(Calendar.DAY_OF_MONTH) - 1);
+            dayAdapter.setSelectedPos(idx);
+            updateSelectedDate(today.getTime());
+        } else {
+            Calendar c = (Calendar) currentCal.clone();
+            c.set(Calendar.DAY_OF_MONTH, 1);
+            updateSelectedDate(c.getTime());
+        }
+    }
+
+    private void rebuildCountsForCurrentMonth() {
+        dayTaskCount.clear();
+        int y = currentCal.get(Calendar.YEAR);
+        int m = currentCal.get(Calendar.MONTH) + 1;
+        for (TaskResponseDto t : allTasks) {
+            LocalDate d = parseIso(t.getDueDate());
+            if (d != null && d.getYear() == y && d.getMonthValue() == m) {
+                int dd = d.getDayOfMonth();
+                dayTaskCount.put(dd, dayTaskCount.getOrDefault(dd, 0) + 1);
+            }
+        }
+    }
+
+    /* ======================= CALENDAR ======================= */
+
+    private void buildMonthDays() {
+        dayItems.clear();
+        Calendar cal = (Calendar) currentCal.clone();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        int firstDow = cal.get(Calendar.DAY_OF_WEEK); // Sun=1..Sat=7
+        int daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        // Tail tháng trước
+        Calendar prev = (Calendar) currentCal.clone(); prev.add(Calendar.MONTH, -1);
+        int prevDays = prev.getActualMaximum(Calendar.DAY_OF_MONTH);
+        int offset = Math.max(0, firstDow - Calendar.SUNDAY); // 0..6
+        for (int i = 0; i < offset; i++) {
+            int dayNum = prevDays - offset + 1 + i;
+            Calendar dCal = (Calendar) prev.clone();
+            dCal.set(Calendar.DAY_OF_MONTH, dayNum);
+            dayItems.add(new DayItem(dayNum, dCal.getTime(), false));
+        }
+
+        // Ngày trong tháng
+        for (int d = 1; d <= daysInMonth; d++) {
+            cal.set(Calendar.DAY_OF_MONTH, d);
+            dayItems.add(new DayItem(d, cal.getTime(), true));
+        }
+
+        // Head tháng sau cho đủ 42 ô
+        Calendar next = (Calendar) currentCal.clone(); next.add(Calendar.MONTH, 1);
+        int nextDay = 1;
+        while (dayItems.size() < 42) {
+            Calendar dCal = (Calendar) next.clone();
+            dCal.set(Calendar.DAY_OF_MONTH, nextDay++);
+            dayItems.add(new DayItem(dCal.get(Calendar.DAY_OF_MONTH), dCal.getTime(), false));
+        }
+
+        tvMonthTitle.setText(MONTH_TITLE_FMT.format(currentCal.getTime()));
+        rebuildCountsForCurrentMonth();
+        dayAdapter.setSelectedPos(-1);
+        dayAdapter.notifyDataSetChanged();
     }
 
     private void changeMonth(int delta) {
         animateMonthFade();
         currentCal.add(Calendar.MONTH, delta);
         buildMonthDays();
+
+        // vì mock theo tháng đang xem, nạp lại mock:
+        loadAllMyTasks();
     }
 
     private void animateMonthFade() {
-        if (rvCalendarDays == null) return;
-        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(rvCalendarDays, "alpha", 1f, 0f);
-        fadeOut.setDuration(120);
-        ObjectAnimator fadeIn = ObjectAnimator.ofFloat(rvCalendarDays, "alpha", 0f, 1f);
-        fadeIn.setDuration(180);
+        ObjectAnimator a = ObjectAnimator.ofFloat(rvCalendarDays, "alpha", 1f, 0f);
+        a.setDuration(120);
+        ObjectAnimator b = ObjectAnimator.ofFloat(rvCalendarDays, "alpha", 0f, 1f);
+        b.setDuration(180);
         AnimatorSet set = new AnimatorSet();
-        set.playSequentially(fadeOut, fadeIn);
+        set.playSequentially(a, b);
         set.start();
     }
 
-    private void buildMonthDays() {
-        dayItems.clear();
-        Calendar cal = (Calendar) currentCal.clone();
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        int firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK); // Sunday=1
-        int daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-        // Previous month tail
-        Calendar prev = (Calendar) currentCal.clone();
-        prev.add(Calendar.MONTH, -1);
-        int prevMonthDays = prev.getActualMaximum(Calendar.DAY_OF_MONTH);
-        for (int i = 1; i < firstDayOfWeek; i++) {
-            int dayNum = prevMonthDays - (firstDayOfWeek - i) + 1;
-            Calendar dCal = (Calendar) prev.clone();
-            dCal.set(Calendar.DAY_OF_MONTH, dayNum);
-            dayItems.add(new DayItem(dayNum, dCal.getTime(), false));
-        }
-        // Current month
-        for (int d = 1; d <= daysInMonth; d++) {
-            cal.set(Calendar.DAY_OF_MONTH, d);
-            dayItems.add(new DayItem(d, cal.getTime(), true));
-        }
-        // Next month head to fill 6 rows if needed
-        Calendar next = (Calendar) currentCal.clone();
-        next.add(Calendar.MONTH, 1);
-        int totalCells = dayItems.size();
-        int rows = (int) Math.ceil(totalCells / 7f);
-        int targetCells = rows < 6 ? 42 : rows * 7; // ensure 6 rows
-        int nextDay = 1;
-        while (dayItems.size() < targetCells) {
-            Calendar dCal = (Calendar) next.clone();
-            dCal.set(Calendar.DAY_OF_MONTH, nextDay);
-            dayItems.add(new DayItem(nextDay, dCal.getTime(), false));
-            nextDay++;
-        }
-        generateMockCounts(daysInMonth); // TODO real counts
-        // Auto select today
-        Calendar today = Calendar.getInstance();
-        if (today.get(Calendar.YEAR) == currentCal.get(Calendar.YEAR) && today.get(Calendar.MONTH) == currentCal.get(Calendar.MONTH)) {
-            int todayDay = today.get(Calendar.DAY_OF_MONTH);
-            // index after previous month tail
-            int index = 0;
-            // previous tail length = firstDayOfWeek-1
-            index = (firstDayOfWeek - 1) + (todayDay - 1);
-            if (index >= 0 && index < dayItems.size()) {
-                dayAdapter.setSelectedPos(index);
-                selectedDate = today.getTime();
-            }
-        } else {
-            dayAdapter.setSelectedPos(-1);
-            selectedDate = null;
-        }
-        dayAdapter.notifyDataSetChanged();
-        SimpleDateFormat fmt = new SimpleDateFormat("MMMM yyyy", Locale.US);
-        tvMonthTitle.setText(fmt.format(currentCal.getTime()));
-    }
+    /* ===================== SELECT & FILTER ===================== */
 
-    private void generateMockCounts(int daysInMonth) {
-        dayTaskCount.clear();
-        for (int d=1; d<=daysInMonth; d++) {
-            int c = 0;
-            if (d % 5 == 0) c = 3; else if (d % 3 == 0) c = 1; else if (d % 7 == 0) c = 2; // mô phỏng
-            if (c>0) dayTaskCount.put(d, c);
-        }
-    }
-
-    private void onDaySelected(Date date) {
+    private void onDaySelected(Date date, int adapterPos) {
         updateSelectedDate(date);
+        int old = dayAdapter.getSelectedPos();
+        dayAdapter.setSelectedPos(adapterPos);
+        if (old != -1) dayAdapter.notifyItemChanged(old);
+        dayAdapter.notifyItemChanged(adapterPos);
     }
 
     private void updateSelectedDate(Date date) {
-        selectedDate = date; // TODO Backend
-        SimpleDateFormat barFmt = new SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.US);
-        tvSelectedDateBar.setText(barFmt.format(date));
-        List<CalendarTaskAdapter.CalendarTaskData> tasks = new ArrayList<>();
-        tasks.add(new CalendarTaskAdapter.CalendarTaskData("Design Wireframe", "IN_PROGRESS", "10/10", "1 assigned"));
-        tasks.add(new CalendarTaskAdapter.CalendarTaskData("API Contract", "TODO", "2/5", "2 assigned"));
-        tasks.add(new CalendarTaskAdapter.CalendarTaskData("Retrospective", "DONE", "5/5", "3 assigned"));
-        taskAdapter.setItems(tasks);
+        tvSelectedDateBar.setText(SELECTED_BAR_FMT.format(date));
+
+        Calendar c = Calendar.getInstance(); c.setTime(date);
+        int y = c.get(Calendar.YEAR), m = c.get(Calendar.MONTH) + 1, d = c.get(Calendar.DAY_OF_MONTH);
+
+        List<TaskResponseDto> filtered = new ArrayList<>();
+        for (TaskResponseDto t : allTasks) {
+            LocalDate due = parseIso(t.getDueDate());
+            if (due != null && due.getYear()==y && due.getMonthValue()==m && due.getDayOfMonth()==d) {
+                filtered.add(t);
+            }
+        }
+        taskAdapter.submitList(filtered);
     }
 
-    // Data models
+    /* ======================== HELPERS ======================== */
+
+    private LocalDate parseIso(String s) {
+        if (s == null) return null;
+        try { return LocalDate.parse(s.trim(), ISO_LOCAL); } catch (Exception e) { return null; }
+    }
+
+    private boolean sameYearMonth(Calendar a, Calendar b) {
+        return a.get(Calendar.YEAR)==b.get(Calendar.YEAR) && a.get(Calendar.MONTH)==b.get(Calendar.MONTH);
+    }
+
+    private int firstDayOffsetOfMonth(Calendar monthCal) {
+        Calendar c = (Calendar) monthCal.clone();
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        return Math.max(0, c.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY);
+    }
+
+    /* =================== MODELS & GRID ADAPTER =================== */
+
     private static class DayItem {
         final int dayNumber; final Date date; final boolean inCurrentMonth;
         DayItem(int dayNumber, Date date, boolean inCurrentMonth) { this.dayNumber = dayNumber; this.date = date; this.inCurrentMonth = inCurrentMonth; }
     }
 
-    private static class DayAdapter extends RecyclerView.Adapter<DayAdapter.DayVH> {
-        interface OnDayClick { void onClick(Date date); }
-        private final List<DayItem> items; private final OnDayClick listener;
+    private class DayGridAdapter extends RecyclerView.Adapter<DayGridAdapter.DayVH> {
         private int selectedPos = -1;
-        DayAdapter(List<DayItem> items, OnDayClick l){ this.items=items; this.listener=l; }
-        void setSelectedPos(int pos){ this.selectedPos = pos; }
-        @NonNull @Override public DayVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        int getSelectedPos() { return selectedPos; }
+        void setSelectedPos(int pos) { this.selectedPos = pos; }
+
+        @NonNull @Override
+        public DayVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_calendar_day, parent, false);
             return new DayVH(v);
         }
-        @Override public void onBindViewHolder(@NonNull DayVH h, int pos) {
-            DayItem it = items.get(pos);
-            if (it.date == null) {
-                h.tv.setText(""); h.tv.setBackgroundResource(R.drawable.bg_day_unselected); h.tv.setEnabled(false); h.dot.setVisibility(View.GONE); return;
-            }
-            h.tv.setEnabled(it.inCurrentMonth);
+
+        @Override
+        public void onBindViewHolder(@NonNull DayVH h, int pos) {
+            DayItem it = dayItems.get(pos);
             h.tv.setText(String.valueOf(it.dayNumber));
+            h.tv.setEnabled(it.inCurrentMonth);
+
             if (!it.inCurrentMonth) {
                 h.tv.setTextColor(Color.parseColor("#BDBDBD"));
                 h.tv.setBackgroundResource(R.drawable.bg_day_unselected);
@@ -216,41 +309,46 @@ public class TaskCalendarActivity extends AppCompatActivity {
                 if (pos == selectedPos) {
                     h.tv.setBackgroundResource(R.drawable.bg_day_selected);
                     h.tv.setTextColor(Color.WHITE);
+                    h.dot.setVisibility(View.GONE);
                 } else {
                     h.tv.setBackgroundResource(R.drawable.bg_day_unselected);
                     h.tv.setTextColor(Color.parseColor("#424242"));
-                }
-                // Task indicator dot
-                Integer count = dayTaskCount.get(it.dayNumber);
-                if (count != null && count > 0 && pos != selectedPos) {
-                    h.dot.setBackgroundResource(R.drawable.bg);
-                    h.dot.setVisibility(View.VISIBLE);
-                } else if (isToday(it.date) && pos != selectedPos) {
-                    h.dot.setBackgroundResource(R.drawable.dot_today_indicator);
-                    h.dot.setVisibility(View.VISIBLE);
-                } else {
-                    h.dot.setVisibility(View.GONE);
+
+                    Integer cnt = dayTaskCount.get(it.dayNumber);
+                    if (cnt != null && cnt > 0) {
+                        h.dot.setBackgroundResource(R.drawable.dot_dealine_indicator);
+                        h.dot.setVisibility(View.VISIBLE);
+                    } else if (isToday(it.date)) {
+                        h.dot.setBackgroundResource(R.drawable.dot_today_indicator);
+                        h.dot.setVisibility(View.VISIBLE);
+                    } else {
+                        h.dot.setVisibility(View.GONE);
+                    }
                 }
             }
+
             h.itemView.setOnClickListener(v -> {
-                if (!it.inCurrentMonth) return; // ignore outside month
-                int adapterPos = h.getBindingAdapterPosition();
-                if (adapterPos == RecyclerView.NO_POSITION) return;
-                DayItem clicked = items.get(adapterPos);
-                if (clicked.date != null) listener.onClick(clicked.date);
-                int old = selectedPos; selectedPos = adapterPos;
-                if (old != -1) notifyItemChanged(old);
-                notifyItemChanged(selectedPos);
-                h.tv.animate().scaleX(1.05f).scaleY(1.05f).setDuration(150)
+                if (!it.inCurrentMonth) return;
+                int p = h.getBindingAdapterPosition();
+                if (p == RecyclerView.NO_POSITION) return;
+                onDaySelected(it.date, p);
+                h.tv.animate().scaleX(1.05f).scaleY(1.05f).setDuration(140)
                         .withEndAction(() -> h.tv.animate().scaleX(1f).scaleY(1f).setDuration(120));
             });
         }
+
         private boolean isToday(Date date) {
             Calendar c = Calendar.getInstance(); c.setTime(date);
             Calendar t = Calendar.getInstance();
-            return c.get(Calendar.YEAR)==t.get(Calendar.YEAR) && c.get(Calendar.DAY_OF_YEAR)==t.get(Calendar.DAY_OF_YEAR);
+            return c.get(Calendar.YEAR)==t.get(Calendar.YEAR) &&
+                    c.get(Calendar.DAY_OF_YEAR)==t.get(Calendar.DAY_OF_YEAR);
         }
-        @Override public int getItemCount() { return items.size(); }
-        class DayVH extends RecyclerView.ViewHolder { TextView tv; View dot; DayVH(View v){ super(v); tv=v.findViewById(R.id.tvDayNumber); dot=v.findViewById(R.id.dotIndicator);} }
+
+        @Override public int getItemCount() { return dayItems.size(); }
+
+        class DayVH extends RecyclerView.ViewHolder {
+            TextView tv; View dot;
+            DayVH(@NonNull View v) { super(v); tv = v.findViewById(R.id.tvDayNumber); dot = v.findViewById(R.id.dotIndicator); }
+        }
     }
 }

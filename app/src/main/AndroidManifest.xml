@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:allowBackup="true"
@@ -40,6 +40,11 @@
             android:name=".controller.ChatGroupActivity"
             android:exported="false" />
         <activity
+            android:name=".controller.KanbanActivity"
+            android:exported="false" />
+
+
+        <activity
             android:name=".controller.ChatActivity"
             android:exported="false" />
         <activity
@@ -72,6 +77,10 @@
             android:exported="false" />
         <activity
             android:name=".controller.CreateTaskActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".controller.NotificationsActivity"
             android:exported="false" />
 
         <activity

@@ -1,5 +1,6 @@
 package com.fpt.myapplication.controller;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -136,6 +137,12 @@ public class LoginActivity extends AppCompatActivity {
             }
             @Override public void afterTextChanged(android.text.Editable s) {}
         });
+    }
+
+    public static void startAsNewTask(Context context) {
+        Intent intent = new Intent(context, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        context.startActivity(intent);
     }
 
 }

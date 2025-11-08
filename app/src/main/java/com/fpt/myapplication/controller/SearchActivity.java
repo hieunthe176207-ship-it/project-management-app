@@ -1,5 +1,6 @@
 package com.fpt.myapplication.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -18,7 +19,6 @@ import com.fpt.myapplication.dto.response.TaskResponseDto;
 import com.fpt.myapplication.model.ProjectModel;
 import com.fpt.myapplication.view.adapter.ProjectAdapter;
 import com.fpt.myapplication.view.adapter.SearchTaskAdapter;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -49,8 +49,8 @@ public class SearchActivity extends AppCompatActivity {
     private final CompositeDisposable bag = new CompositeDisposable();
     private final PublishSubject<String> querySubject = PublishSubject.create();
 
-    // In-flight API disposable (nếu bạn muốn cancel logic async khác — ở đây callback-based nên giữ để minh họa)
-    private Disposable inFlight; // không dùng nếu ProjectModel dùng callback thuần
+    // In-flight API disposable
+    private Disposable inFlight;
 
     // State
     private String keyword = "";
@@ -73,10 +73,16 @@ public class SearchActivity extends AppCompatActivity {
         rvTaskResults.setLayoutManager(new GridLayoutManager(this, 2));
         rvProjectResults.setLayoutManager(new LinearLayoutManager(this));
 
-        searchTaskAdapter = new SearchTaskAdapter(item -> {
-            // TODO: handle click task
+        // Setup adapters với click listeners
+        searchTaskAdapter = new SearchTaskAdapter(task -> {
+            navigateToTaskDetail(task.getId());
         });
+
         projectAdapter = new ProjectAdapter();
+        projectAdapter.setOnItemClick(project -> {
+            navigateToProjectDetail(project.getId());
+        });
+
         rvTaskResults.setAdapter(searchTaskAdapter);
         rvProjectResults.setAdapter(projectAdapter);
 
@@ -89,7 +95,6 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-
         // Debounce 400ms, trim, lọc trùng
         bag.add(
                 querySubject
@@ -100,16 +105,13 @@ public class SearchActivity extends AppCompatActivity {
                         .subscribe(q -> {
                             keyword = q;
                             if (q.isEmpty()) {
-                                // input rỗng -> clear UI, không gọi API
                                 showProgress(false);
                                 renderTasks(new ArrayList<>());
                                 renderProjects(new ArrayList<>());
                             } else {
-                                // có input -> gọi API
                                 fetchData();
                             }
                         }, err -> {
-                            // Không để app crash nếu có lỗi stream
                             showProgress(false);
                         })
         );
@@ -144,18 +146,29 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onError(ResponseError error) {
                 showProgress(false);
-                // Clear kết quả (hoặc giữ kết quả cũ tùy UX)
                 renderTasks(new ArrayList<>());
                 renderProjects(new ArrayList<>());
-                // TODO: show Snackbar/toast error nếu cần
             }
 
             @Override
             public void onLoading() {
-                // Nếu model có bắn onLoading, bạn có thể show progress ở đây
                 showProgress(true);
             }
         });
+    }
+
+    // ---------------- Navigation ----------------
+
+    private void navigateToTaskDetail(int taskId) {
+        Intent intent = new Intent(this, TaskActivity.class);
+        intent.putExtra("task_id", taskId);
+        startActivity(intent);
+    }
+
+    private void navigateToProjectDetail(int projectId) {
+        Intent intent = new Intent(this, ProjectDetailActivity.class);
+        intent.putExtra("project_id", projectId);
+        startActivity(intent);
     }
 
     // ---------------- UI Helpers ----------------

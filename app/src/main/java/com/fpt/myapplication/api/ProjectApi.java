@@ -4,6 +4,7 @@ package com.fpt.myapplication.api;
 
 import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.request.ProjectCreateRequest;
+import com.fpt.myapplication.dto.request.UpdateProjectRequest;
 import com.fpt.myapplication.dto.response.ProjectResponse;
 import com.fpt.myapplication.dto.response.SearchResponse;
 import com.fpt.myapplication.dto.response.UserResponse;
@@ -16,6 +17,7 @@ import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -57,4 +59,7 @@ public interface ProjectApi {
 
     @GET("/project/search-global")
     Call<ResponseSuccess<SearchResponse>> searchGlobal(@Query("keyword") String keyword);
+
+    @PUT("/project/update-project/{projectId}")
+    Call<ResponseSuccess> updateProject(@Path("projectId") int projectId, @Body UpdateProjectRequest request);
 }

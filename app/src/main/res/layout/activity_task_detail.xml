@@ -108,7 +108,7 @@
                 app:titleCentered="true"
                 app:titleTextColor="@android:color/white"
                 app:navigationIcon="@drawable/ic_arrow_back_white"
-                app:menu="@menu/project_menu"/>
+                app:menu="@menu/task_menu"/>
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -248,7 +248,7 @@
         android:id="@+id/loadingOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#80FFFFFF"
+        android:background="@color/white"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone">

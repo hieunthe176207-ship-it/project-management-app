@@ -51,7 +51,8 @@ public class WebSocketManager {
      * - Thiết bị thật → dùng IP LAN của PC (vd: 192.168.1.100)
      * Ví dụ backend Spring Boot expose endpoint /ws (thuần WS, không withSockJS) cho mobile.
      */
-    private static final String WS_URL = "ws://192.168.0.100:8080/ws";
+
+    private static final String WS_URL = "ws://10.0.2.2:8080/ws";
 
     /** Singleton instance */
     private static WebSocketManager INSTANCE;

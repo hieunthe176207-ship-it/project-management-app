@@ -94,23 +94,24 @@ public class ProjectTaskListActivity extends AppCompatActivity {
         adapter.setOnTaskClickListener(task -> {
             Intent i = new Intent(ProjectTaskListActivity.this, TaskActivity.class);
             i.putExtra("task_id", task.getId());
+            i.putExtra("project_id" , projectId);
             startActivity(i);
         });
 
 
         findViewById(R.id.fabAddProjectTask).setOnClickListener(v ->{
             Intent i = new Intent(ProjectTaskListActivity.this, CreateTaskActivity.class);
+            i.putExtra("project_id", projectId);
             startActivity(i);
         }
 
         );
+    }
 
-        // Gọi API thật
-        if (projectId != -1) {
-            fetchData();
-        } else {
-            Toast.makeText(this, "Thiếu project_id", Toast.LENGTH_SHORT).show();
-        }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        fetchData();
     }
 
     private void fetchData() {

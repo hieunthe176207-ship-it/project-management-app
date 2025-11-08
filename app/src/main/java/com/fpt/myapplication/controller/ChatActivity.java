@@ -65,7 +65,9 @@ package com.fpt.myapplication.controller;
                 protected void onCreate(@Nullable Bundle savedInstanceState) {
                     super.onCreate(savedInstanceState);
                     setContentView(R.layout.chat_layout);
-
+                    MaterialToolbar toolbar = findViewById(R.id.toolbar);
+                    setSupportActionBar(toolbar);
+                    toolbar.setNavigationOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
                     messageModel = new MessageModel(this);
                     adapter = new MessageAdapter();
 
@@ -93,7 +95,6 @@ package com.fpt.myapplication.controller;
                     recyclerView.setLayoutManager(lm);
                     recyclerView.setAdapter(adapter);
 
-                    MaterialToolbar toolbar = findViewById(R.id.toolbar);
                     setSupportActionBar(toolbar);
                     toolbar.setTitleTextColor(getColor(R.color.black));
                     toolbar.setNavigationIconTint(getColor(R.color.black));

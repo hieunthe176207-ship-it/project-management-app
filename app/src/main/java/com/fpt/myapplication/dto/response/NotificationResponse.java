@@ -1,21 +1,25 @@
 package com.fpt.myapplication.dto.response;
 
+import com.fpt.myapplication.dto.response.UserResponse;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class NotificationResponse {
     Integer id;
     String title;
     String content;
-    Boolean isRead;
     String type;
+    Integer targetId;
     String createdAt;
-    UserResponse user;
+    Boolean isRead;
     UserResponse sender;
 }

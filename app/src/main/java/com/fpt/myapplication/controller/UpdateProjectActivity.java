@@ -1,6 +1,7 @@
 package com.fpt.myapplication.controller;
 
 import android.os.Bundle;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.view.View;
 
@@ -8,6 +9,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fpt.myapplication.R;
+import com.fpt.myapplication.dto.ResponseError;
+import com.fpt.myapplication.dto.ResponseSuccess;
+import com.fpt.myapplication.dto.request.UpdateProjectRequest;
+import com.fpt.myapplication.dto.response.ProjectResponse;
+import com.fpt.myapplication.model.ProjectModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -19,6 +25,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class UpdateProjectActivity extends AppCompatActivity {
 
     // Views
@@ -27,17 +35,79 @@ public class UpdateProjectActivity extends AppCompatActivity {
     private MaterialButtonToggleGroup tgVisibility;
     private MaterialButton btnAddDeadline, btnCreate;
 
+    private ProgressBar progress;
+
     // Giữ deadline đã chọn (định dạng để gửi backend sau này)
     // Ở đây mình để "yyyy-MM-dd" để khớp LocalDate.toString() khi bạn cần dùng.
     private @Nullable String selectedDueDateIso = null;
+
+    private int projectId;
+
+    private ProjectModel projectModel;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.update_project_detail_layout);
+        projectId = getIntent().getIntExtra("project_id", -1);
+        projectModel = new ProjectModel(this);
         bindViews();
         setupUi();
-        prefillIfAny();   // nếu muốn nhận sẵn dữ liệu qua Intent (tuỳ chọn)
+        fetchData();
+    }
+
+
+    private void fetchData() {
+        showLoading(true);
+        projectModel.getProjectById(projectId, new ProjectModel.GetProjectDetailCallBack() {
+            @Override
+            public void onSuccess(ProjectResponse data) {
+                showLoading(false);
+                etName.setText(data.getName());
+                etDesc.setText(data.getDescription());
+                if (data.getIsPublic() == 1) {
+                    tgVisibility.check(R.id.btnPublic);
+                } else {
+                    tgVisibility.check(R.id.btnPrivate);
+                }
+                selectedDueDateIso = data.getDeadline();
+                btnAddDeadline.setText(data.getDeadline());
+            }
+
+            @Override
+            public void onError(ResponseError error) {
+                showLoading(false);
+                btnCreate.setEnabled(false); // disable nút cập nhật nếu load thất bại
+                String msg = (error != null && error.message != null && !error.message.trim().isEmpty())
+                        ? error.message
+                        : "Không tải được thông tin dự án. Vui lòng thử lại.";
+
+                new SweetAlertDialog(UpdateProjectActivity.this, SweetAlertDialog.ERROR_TYPE)
+                        .setTitleText("Có lỗi xảy ra")
+                        .setContentText(msg)
+                        .setConfirmText("OK")
+                        .show();
+            }
+
+            @Override
+            public void onLoading() {
+                showLoading(true);
+            }
+        });
+    }
+
+
+    private void showLoading(boolean loading) {
+        if (progress != null) progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        if (btnCreate != null) btnCreate.setEnabled(!loading);
+        if (btnAddDeadline != null) btnAddDeadline.setEnabled(!loading);
+        if (tgVisibility != null) { // nếu có toggle-group
+            for (int i = 0; i < tgVisibility.getChildCount(); i++) {
+                tgVisibility.getChildAt(i).setEnabled(!loading);
+            }
+        }
+        if (etName != null) etName.setEnabled(!loading);
+        if (etDesc != null) etDesc.setEnabled(!loading);
     }
 
     private void bindViews() {
@@ -48,6 +118,7 @@ public class UpdateProjectActivity extends AppCompatActivity {
         tgVisibility = findViewById(R.id.tgVisibility);
         btnAddDeadline = findViewById(R.id.btnAddDeadline);
         btnCreate = findViewById(R.id.btnCreate);
+        progress = findViewById(R.id.progress);
     }
 
     private void setupUi() {
@@ -70,7 +141,7 @@ public class UpdateProjectActivity extends AppCompatActivity {
                 btnAddDeadline.setText(uiDate);
 
                 // Lưu ISO (yyyy-MM-dd) để dùng khi gửi backend sau này
-                SimpleDateFormat isoFmt = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                SimpleDateFormat isoFmt = new SimpleDateFormat("yyyy/MM/dd", Locale.US);
                 isoFmt.setTimeZone(TimeZone.getTimeZone("UTC"));
                 selectedDueDateIso = isoFmt.format(new Date(selMillis));
             });
@@ -103,15 +174,38 @@ public class UpdateProjectActivity extends AppCompatActivity {
 
             if (!ok) return;
 
-            // Chỉ hiển thị kết quả để bạn thấy luồng (không call API)
-            String msg = "OK\nTên: " + name +
-                    "\nMô tả: " + desc +
-                    "\nCông khai: " + (isPublic ? "Có" : "Không") +
-                    "\nDeadline(ISO): " + (selectedDueDateIso == null ? "(chưa chọn)" : selectedDueDateIso);
-            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+            UpdateProjectRequest request = new UpdateProjectRequest();
+            request.setTitle(name);
+            request.setDescription(desc);
+            request.setIsPublic(isPublic ? 1 : 0);
+            request.setDeadline(selectedDueDateIso);
+             projectModel.updateProject(projectId, request, new ProjectModel.UpdateProjectCallBack() {
+              @Override
+              public void onSuccess(ResponseSuccess data) {
+                  showLoading(false);
+                  Toast.makeText(UpdateProjectActivity.this, "Cập nhật dự án thành công", Toast.LENGTH_SHORT).show();
+                  setResult(RESULT_OK);
+                  finish();
 
-            // TODO: sau này thay bằng gọi API update hoặc setResult(...) trả về màn trước
-        });
+              }
+
+              @Override
+              public void onError(ResponseError error) {
+                  showLoading(false);
+                  SweetAlertDialog dialog = new SweetAlertDialog(UpdateProjectActivity.this, SweetAlertDialog.ERROR_TYPE)
+                          .setTitleText("Có lỗi xảy ra")
+                          .setContentText(error != null && error.message != null ? error.message : "Cập nhật thất bại.")
+                          .setConfirmText("OK");
+                  dialog.show();
+              }
+
+              @Override
+              public void onLoading() {
+                  showLoading(true);
+              }
+          });
+        }
+        );
     }
 
     private void clearErrors() {
@@ -124,27 +218,4 @@ public class UpdateProjectActivity extends AppCompatActivity {
     }
 
     /** Tuỳ chọn: tiền điền dữ liệu khi vào màn Update (qua Intent) */
-    private void prefillIfAny() {
-        // Ví dụ:
-        // String initName = getIntent().getStringExtra("name");
-        // String initDesc = getIntent().getStringExtra("desc");
-        // String initDeadlineIso = getIntent().getStringExtra("deadline"); // yyyy-MM-dd
-        // int initIsPublic = getIntent().getIntExtra("isPublic", 1);
-
-        // if (initName != null) etName.setText(initName);
-        // if (initDesc != null) etDesc.setText(initDesc);
-        // tgVisibility.check(initIsPublic == 1 ? R.id.btnPublic : R.id.btnPrivate);
-        //
-        // if (initDeadlineIso != null && !initDeadlineIso.isEmpty()) {
-        //     selectedDueDateIso = initDeadlineIso;
-        //     // chuyển ISO -> dd/MM/yyyy để set text nút
-        //     try {
-        //         java.time.LocalDate d = java.time.LocalDate.parse(initDeadlineIso); // cần desugaring Java 8
-        //         java.time.format.DateTimeFormatter out = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        //         btnAddDeadline.setText(d.format(out));
-        //     } catch (Throwable ignored) {
-        //         btnAddDeadline.setText(initDeadlineIso);
-        //     }
-        // }
-    }
 }

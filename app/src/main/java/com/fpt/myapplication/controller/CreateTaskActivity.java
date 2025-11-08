@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fpt.myapplication.R;
 import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.request.CreateTaskRequest;
+import com.fpt.myapplication.dto.request.UpdateTaskRequest;
+import com.fpt.myapplication.dto.response.TaskDetailResponse;
 import com.fpt.myapplication.dto.response.UserResponse;
 import com.fpt.myapplication.model.ProjectModel;
 import com.fpt.myapplication.model.TaskModel;
@@ -43,7 +45,7 @@ public class CreateTaskActivity extends AppCompatActivity {
     private TextInputEditText etName, etDescription;
     private MaterialButton btnDueDate, btnCreate, btnCancel, btnAssignees; // NEW
 
-
+    private TextView tvHeader;
     private TaskModel  taskModel;
     private RecyclerView rvMembers;
 
@@ -53,7 +55,10 @@ public class CreateTaskActivity extends AppCompatActivity {
 
     private final ArrayList<UserResponse> allUsers = new ArrayList<>();
     private final ArrayList<UserResponse> pickedUsers = new ArrayList<>();
+    private int projectId;
+    private int taskId;
 
+    private boolean isEdit = false;
     // NEW
 
     // Lưu ngày đã chọn (LocalDate) + formatter yyyy-MM-dd
@@ -67,7 +72,10 @@ public class CreateTaskActivity extends AppCompatActivity {
         projectModel = new ProjectModel(this);
         taskModel = new TaskModel(this);
         bindViews();
-
+        tvHeader.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        projectId = getIntent().getIntExtra("project_id", -1);
+        taskId = getIntent().getIntExtra("task_id", -1);
+        isEdit = getIntent().getBooleanExtra("is_edit", false);
         adapter = new AssignUserAdapter();
         adapter.setShowRemove(true); // nếu item có nút Xoá
         adapter.setOnRemoveClickListener((user, pos) -> {
@@ -83,6 +91,69 @@ public class CreateTaskActivity extends AppCompatActivity {
         });
         rvMembers.setLayoutManager(new LinearLayoutManager(this));
         rvMembers.setAdapter(adapter);
+
+        if(isEdit){
+            taskModel.getTaskDetail(taskId, new TaskModel.GetTaskDetailCallBack() {
+                @Override
+                public void onSuccess(TaskDetailResponse data) {
+                    btnCreate.setEnabled(true);
+                    btnCancel.setEnabled(true);
+                    btnCreate.setText("Cập nhật");
+                    tvHeader.setText("Chỉnh sửa công việc");
+                    etName.setText(data.getTitle());
+                    etDescription.setText(data.getDescription());
+                    if(data.getDueDate() != null && !data.getDueDate().isEmpty()){
+                        selectedDate = LocalDate.parse(data.getDueDate(), ISO_LOCAL);
+                        btnDueDate.setText(DISPLAY_FMT.format(selectedDate));
+                    }
+                    // Set pickedUsers từ assignees
+                    pickedUsers.clear();
+                    if (data.getAssignees() != null) {
+                        pickedUsers.addAll(data.getAssignees());
+                    }
+                    renderPickedChips();
+                }
+
+                @Override
+                public void onError(ResponseError error) {
+                    // Lấy message an toàn
+                    String msg = (error != null && error.message != null && !error.message.trim().isEmpty())
+                            ? error.message
+                            : "Tạo công việc thất bại. Vui lòng thử lại.";
+
+                    SweetAlertDialog dlg = new SweetAlertDialog(CreateTaskActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Thông báo")
+                            .setContentText(msg)
+                            .setConfirmText("Quay về trang chủ")
+                            .setCancelText("Ở lại");
+
+                    // Không đóng bằng back / chạm bên ngoài
+                    dlg.setCancelable(false);
+                    dlg.setCanceledOnTouchOutside(false);
+
+                    // Confirm => về Home
+                    dlg.setConfirmClickListener(s -> {
+                        s.dismissWithAnimation();
+                        Intent intent = new Intent(CreateTaskActivity.this, HomeActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish();
+                    });
+
+                    // Cancel => ở lại màn hình hiện tại
+                    dlg.setCancelClickListener(SweetAlertDialog::dismissWithAnimation);
+
+                    dlg.show();
+                }
+
+                @Override
+                public void onLoading() {
+                    btnCreate.setEnabled(false);
+                    btnCancel.setEnabled(false);
+                    btnCreate.setText("....");
+                }
+            });
+        }
 
         setupListeners();
         loadAllUsers();
@@ -100,6 +171,7 @@ public class CreateTaskActivity extends AppCompatActivity {
         btnCreate = findViewById(R.id.btnCreate);
         btnCancel = findViewById(R.id.btnCancel);
         btnAssignees = findViewById(R.id.btnAssignees);
+        tvHeader = findViewById(R.id.tvHeader);
     }
 
     private void setupListeners() {
@@ -112,69 +184,82 @@ public class CreateTaskActivity extends AppCompatActivity {
                 // Lấy list ID của assignees (nếu cần đẩy API)
                 List<Integer> assigneeIds = getAssigneeIds(); // NEW
                 String due = selectedDate != null ? DISPLAY_FMT.format(selectedDate) : "";
-                CreateTaskRequest request = new CreateTaskRequest();
-                request.setTitle(form.name);
-                request.setDescription(form.description);
-                request.setDueDate(due);
-                request.setAssigneeIds(assigneeIds);
-                request.setProjectId(1);
-
-                taskModel.createTask(request, new TaskModel.CreateTaskCallBack() {
-                    @Override
-                    public void onSuccess(Integer id) {
-                        btnCreate.setEnabled(true);
-                        btnCancel.setEnabled(true);
-                        btnCreate.setText("Tạo");
-
-                        Intent i = new Intent(CreateTaskActivity.this, TaskActivity.class);
-                        i.putExtra("task_id", id);
-                        startActivity(i);
-                        finish();
-                    }
-
-                    @Override
-                    public void onError(ResponseError error) {
-                        btnCreate.setEnabled(true);
-                        btnCancel.setEnabled(true);
-                        btnCreate.setText("Hủy");
-
-                        new SweetAlertDialog(CreateTaskActivity.this, SweetAlertDialog.ERROR_TYPE)
-                                .setTitleText("Thông báo")
-                                .setContentText(error.message)
-                                .setConfirmText("OK")
-                                .show();
-                    }
-
-                    @Override
-                    public void onLoading() {
-                        btnCreate.setEnabled(false);
-                        btnCancel.setEnabled(false);
-                        btnCreate.setText("Đang tạo...");
-                    }
-                });
 
 
-//
-//
-//                    }
-//                    @Override
-//                    public void onError(ResponseError error) {
-//                        btnCreate.setEnabled(true);
-//                        btnCancel.setEnabled(true);
-//                        btnCreate.setText("Hủy");
-//
-//                        new SweetAlertDialog(CreateTaskActivity.this, SweetAlertDialog.ERROR_TYPE)
-//                                .setTitleText("Thông báo")
-//                                .setContentText(error.message)
-//                                .setConfirmText("OK")
-//                                .show();
-//                    }
-//
-//                    @Override
-//                    public void onLoading() {
-//                        btnCreate.setEnabled(false);
-//                        btnCancel.setEnabled(false);
-//                        btnCreate.setText("Đang tạo...");
+                if(isEdit){
+                    UpdateTaskRequest req = new UpdateTaskRequest();
+                    req.setId(taskId);
+                    req.setTitle(form.name);
+                    req.setDescription(form.description);
+                    req.setDueDate(due);
+                    req.setAssigneeIds(assigneeIds);
+                    taskModel.updateTask(req, new TaskModel.UpdateTaskCallBack() {
+                        @Override
+                        public void onSuccess(Integer id) {
+                            Intent i = new Intent(CreateTaskActivity.this, TaskActivity.class);
+                            i.putExtra("task_id", id);
+                            startActivity(i);
+                            finish();
+                        }
+
+                        @Override
+                        public void onError(ResponseError error) {
+                            btnCreate.setEnabled(true);
+                            btnCancel.setEnabled(true);
+                            btnCreate.setText("Cập nhật");
+
+                            new SweetAlertDialog(CreateTaskActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                    .setTitleText("Thông báo")
+                                    .setContentText(error.message)
+                                    .setConfirmText("OK")
+                                    .show();
+                        }
+
+                        @Override
+                        public void onLoading() {
+                            btnCreate.setEnabled(false);
+                            btnCancel.setEnabled(false);
+                            btnCreate.setText("Đang cập nhật");
+                        }
+                    });
+                } else {
+                    CreateTaskRequest request = new CreateTaskRequest();
+                    request.setTitle(form.name);
+                    request.setDescription(form.description);
+                    request.setDueDate(due);
+                    request.setAssigneeIds(assigneeIds);
+                    request.setProjectId(projectId);
+                    taskModel.createTask(request, new TaskModel.CreateTaskCallBack() {
+                        @Override
+                        public void onSuccess(Integer id) {
+                            Intent i = new Intent(CreateTaskActivity.this, TaskActivity.class);
+                            i.putExtra("task_id", id);
+                            startActivity(i);
+                            finish();
+                        }
+
+                        @Override
+                        public void onError(ResponseError error) {
+                            btnCreate.setEnabled(true);
+                            btnCancel.setEnabled(true);
+                            btnCreate.setText("Tạo");
+
+                            new SweetAlertDialog(CreateTaskActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                    .setTitleText("Thông báo")
+                                    .setContentText(error.message)
+                                    .setConfirmText("OK")
+                                    .show();
+                        }
+
+
+                        @Override
+                        public void onLoading() {
+                            btnCreate.setEnabled(false);
+                            btnCancel.setEnabled(false);
+                            btnCreate.setText("Đang tạo...");
+                        }
+                    });
+                }
             }
         });
 
@@ -195,7 +280,7 @@ public class CreateTaskActivity extends AppCompatActivity {
 
     // ====== USERS ====== //
     private void loadAllUsers() {
-        projectModel.getProjectsByMemberId(1, new ProjectModel.GetProjectsByMemberCallBack() {
+        projectModel.getProjectsByMemberId(projectId, new ProjectModel.GetProjectsByMemberCallBack() {
             @Override
             public void onSuccess(List<UserResponse> data) {
                 allUsers.clear();
@@ -320,4 +405,5 @@ public class CreateTaskActivity extends AppCompatActivity {
             this.name = name; this.description = description; this.dueDate = dueDate;
         }
     }
+
 }

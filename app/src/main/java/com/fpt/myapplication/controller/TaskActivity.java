@@ -1,5 +1,6 @@
 package com.fpt.myapplication.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -15,10 +16,12 @@ import com.fpt.myapplication.R;
 import com.fpt.myapplication.databinding.ActivityTaskDetailBinding;
 import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.request.CreateSubTaskRequest;
+import com.fpt.myapplication.dto.request.TaskUpdateStatusRequestDto;
 import com.fpt.myapplication.dto.response.SubTaskResponse;
 import com.fpt.myapplication.dto.response.TaskDetailResponse;
 import com.fpt.myapplication.dto.response.UserResponse;
 import com.fpt.myapplication.model.TaskModel;
+import com.fpt.myapplication.model.TaskStatus;
 import com.fpt.myapplication.util.FileUtil;
 import com.fpt.myapplication.view.adapter.SubTaskAdapter;
 
@@ -35,6 +38,7 @@ public class TaskActivity extends AppCompatActivity {
     private TaskModel model;
 
     private int taskId;
+    private int projectId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,8 +47,73 @@ public class TaskActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         taskId = getIntent().getIntExtra("task_id", -1);
+        projectId = getIntent().getIntExtra("project_id", -1);
         model = new TaskModel(this);
 
+        binding.toolbarProject.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.update_act) {
+                Intent intent = new Intent(this, CreateTaskActivity.class);
+                intent.putExtra("task_id", taskId);
+                intent.putExtra("is_edit", true);
+                intent.putExtra("project_id", projectId);
+                startActivity(intent);
+                return true;
+            } else if (id == R.id.to_act) {
+                updateStatus(TaskStatus.TODO);
+                return true;
+            } else if (id == R.id.in_progess_act) {
+                updateStatus(TaskStatus.IN_PROGRESS);
+                return true;
+            } else if (id == R.id.in_review_act) {
+                updateStatus(TaskStatus.IN_REVIEW);
+                return true;
+            } else if (id == R.id.done_act) {
+                updateStatus(TaskStatus.DONE);
+                return true;
+            }else if(id == R.id.delete_act){
+                // Hiển thị dialog xác nhận trước khi xóa
+                new SweetAlertDialog(TaskActivity.this, SweetAlertDialog.WARNING_TYPE)
+                        .setTitleText("Xác nhận xóa")
+                        .setContentText("Bạn có chắc chắn muốn xóa công việc này? Hành động này không thể hoàn tác.")
+                        .setConfirmText("Xóa")
+                        .setCancelText("Hủy")
+                        .setConfirmClickListener(sweetAlertDialog -> {
+                            sweetAlertDialog.dismissWithAnimation();
+
+                            model.deleteTask(taskId, new TaskModel.DeleteTaskCallBack() {
+                                @Override
+                                public void onSuccess() {
+                                    Intent intent = new Intent(TaskActivity.this, ProjectTaskListActivity.class);
+                                    intent.putExtra("project_id", projectId);
+                                    startActivity(intent);
+                                    finish();
+                                }
+
+                                @Override
+                                public void onError(ResponseError error) {
+                                    showLoading(false);
+                                    String msg = (error != null && error.message != null) ? error.message : "Lỗi xóa công việc";
+                                    new SweetAlertDialog(TaskActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                            .setTitleText("Có lỗi xảy ra")
+                                            .setContentText(msg)
+                                            .setConfirmText("OK")
+                                            .show();
+                                }
+
+                                @Override
+                                public void onLoading() {
+                                    showLoading(true);
+                                }
+                            });
+                        })
+                        .setCancelClickListener(SweetAlertDialog::dismissWithAnimation)
+                        .show();
+                return true;
+            }
+            return false;
+        });
         // Toolbar back
         binding.toolbarProject.setNavigationOnClickListener(v -> onBackPressed());
 
@@ -290,6 +359,33 @@ public class TaskActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
+    }
+
+    private void updateStatus(TaskStatus status) {
+
+        model.updateTaskStatus(taskId, new TaskUpdateStatusRequestDto(status), new TaskModel.UpdateTaskStatusCallBack() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(TaskActivity.this, "Cập nhật trạng thái thành công", Toast.LENGTH_SHORT).show();
+                fetchData(); // Tải lại dữ liệu
+            }
+
+            @Override
+            public void onError(ResponseError error) {
+                showLoading(false);
+                String msg = (error != null && error.message != null) ? error.message : "Lỗi cập nhật trạng thái";
+                new SweetAlertDialog(TaskActivity.this, SweetAlertDialog.ERROR_TYPE)
+                        .setTitleText("Có lỗi xảy ra")
+                        .setContentText(msg)
+                        .setConfirmText("OK")
+                        .show();
+            }
+
+            @Override
+            public void onLoading() {
+                showLoading(true);
+            }
+        });
     }
 
 

@@ -44,7 +44,7 @@ public class ListPublicProjectFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.list_project_layout, container, false);
+        return inflater.inflate(R.layout.list_project_public_layout, container, false);
     }
 
     @Override

@@ -3,14 +3,17 @@ package com.fpt.myapplication.api;
 import androidx.annotation.Nullable;
 
 import com.fpt.myapplication.dto.ResponseSuccess;
+import com.fpt.myapplication.dto.request.ChangePasswordRequest;
 import com.fpt.myapplication.dto.response.UserResponse;
 
 import java.util.List;
 
 import okhttp3.MultipartBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
@@ -31,4 +34,7 @@ public interface UserApi {
 
     @POST("/user/update-token-fcm")
     Call<ResponseSuccess> updateTokenFCM(@Query("token") String token);
+
+    @PUT("/user/change-password")
+    Call<ResponseSuccess> changePassword(@Body ChangePasswordRequest request);
 }

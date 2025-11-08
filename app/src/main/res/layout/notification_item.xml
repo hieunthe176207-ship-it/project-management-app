@@ -70,20 +70,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTitle"/>
 
-        <!-- Chip loại -->
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipType"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TASK"
-            app:chipCornerRadius="14dp"
-            app:chipMinHeight="28dp"
-            app:ensureMinTouchTargetSize="false"
-            app:chipBackgroundColor="@color/chip_deadline_bg"
-            app:layout_constraintStart_toStartOf="@id/tvTitle"
-            app:layout_constraintTop_toBottomOf="@id/tvContent"
-            android:layout_marginTop="8dp"
-            />
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

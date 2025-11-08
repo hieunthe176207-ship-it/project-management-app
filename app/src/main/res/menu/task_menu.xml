@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/update_act"
+        android:title="Chỉnh sửa công việc" />
+
+    <item
+        android:id="@+id/to_act"
+        android:title="Cần làm" />
+
+    <item
+        android:id="@+id/in_progess_act"
+        android:title="Đang làm" />
+
+    <item
+        android:id="@+id/in_review_act"
+        android:title="Nhận xét" />
+
+    <item
+        android:id="@+id/done_act"
+        android:title="Hoàn thành" />
+    <item
+        android:id="@+id/delete_act"
+        android:title="Xóa" />
+</menu>

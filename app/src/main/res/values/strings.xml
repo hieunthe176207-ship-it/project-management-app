@@ -30,4 +30,15 @@
     <string name="fab_create_task_desc">Tạo mới</string>
     <string name="progress_count_placeholder">0/0</string>
     <string name="inform_label">Inform</string>
+    <!-- res/values/strings.xml -->
+    <string name="task_filter_prompt">Lọc trạng thái</string>
+    <string name="no_tasks_found">Không có công việc nào</string>
+
+    <!-- res/values/arrays.xml -->
+    <string-array name="task_status_filter_labels">
+        <item>Tất cả</item><item>Chờ làm</item><item>Đang làm</item><item>Chờ duyệt</item><item>Hoàn thành</item>
+    </string-array>
+    <string-array name="task_status_filter_values">
+        <item></item><item>TODO</item><item>IN_PROGRESS</item><item>IN_REVIEW</item><item>DONE</item>
+    </string-array>
 </resources>

@@ -88,11 +88,11 @@ public class ProjectDetailActivity extends AppCompatActivity {
             startActivity(i);
         });
 
-        View cardKaban = findViewById(R.id.cardBaoCao);
-        cardKaban.setOnClickListener(v -> {
-            if (projectId == -1) return;
-            Intent i = new Intent(ProjectDetailActivity.this, KabanBoardActitvity.class);
-            i.putExtra("project_id", projectId);
+        View cardBaoCao = findViewById(R.id.cardBaoCao);
+        cardBaoCao.setOnClickListener(v -> {
+            if (projectId == -1) return; // hoặc show Toast nếu cần
+            Intent i = new Intent(ProjectDetailActivity.this, KanbanActivity.class);
+            i.putExtra("projectId", projectId);
             startActivity(i);
         });
 
@@ -233,7 +233,9 @@ public class ProjectDetailActivity extends AppCompatActivity {
         toolbar.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
             if (id == R.id.update_act) {
-                startActivity(new Intent(this, UpdateProjectActivity.class));
+                Intent i = new Intent(ProjectDetailActivity.this, UpdateProjectActivity.class);
+                i.putExtra("project_id", projectId);
+                startActivity(i);
                 return true;
             } else if (id == R.id.delete_act) {
                 new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
