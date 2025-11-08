@@ -2,153 +2,204 @@ package com.fpt.myapplication.controller;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Toast;
+import android.util.Log;
 import android.widget.TextView;
-import android.widget.ProgressBar;
+import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.fpt.myapplication.R;
+import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.response.TaskResponse;
+import com.fpt.myapplication.dto.response.UserResponse;
+import com.fpt.myapplication.model.TaskModel;
+
 import com.fpt.myapplication.view.adapter.CardTaskAdapter;
-import com.fpt.myapplication.view.adapter.TaskAdapter;
-import com.fpt.myapplication.view.bottomSheet.AddTaskBottomSheet;
-import com.fpt.myapplication.viewmodel.ProjectTaskListViewModel;
+import com.google.android.material.appbar.MaterialToolbar;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectTaskListActivity extends AppCompatActivity {
-    private ProjectTaskListViewModel viewModel;
+
     private CardTaskAdapter adapter;
+    private TaskModel model;
     private int projectId;
-    private List<TaskResponse> allTasks = new ArrayList<>();
-    private TextView btnTask, btnProcess, btnCompleted, btnInform, tvProgressCount, tvProjectDeadline;
-    private ProgressBar pbTasks;
+
+    // Dữ liệu toàn bộ task của project
+    private final List<TaskResponse> allTasks = new ArrayList<>();
+
+    // UI: 4 tab (giữ nguyên id như trong layout của bạn)
+    private TextView tab1; // Cần làm (TODO)
+    private TextView tab2; // Đang làm (IN_PROGRESS)
+    private TextView tab3; // Nhận xét (IN_REVIEW)
+    private TextView tab4; // Hoàn thành (DONE)
+
+    // 0=tab1, 1=tab2, 2=tab3, 3=tab4
+    private int selectedTabIndex = 0;
+
+    // Nhãn hiển thị tab
+    private static final String[] TAB_TITLES = {
+            "Cần làm",     // tab1 = TODO
+            "Đang làm",    // tab2 = IN_PROGRESS
+            "Nhận xét",    // tab3 = IN_REVIEW
+            "Hoàn thành"   // tab4 = DONE
+    };
+
+    // Mapping tab -> tên enum (khớp backend: TODO/IN_PROGRESS/IN_REVIEW/DONE)
+    private static final String[] TAB_STATUS = {
+            "TODO",         // tab1
+            "IN_PROGRESS",  // tab2
+            "IN_REVIEW",    // tab3
+            "DONE"          // tab4
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project_task_list);
-        projectId = getIntent().getIntExtra("project_id", -1); // TODO BACKEND: Truyền từ ProjectDetailActivity
-        androidx.recyclerview.widget.RecyclerView rv = findViewById(R.id.rvProjectTasks);
+
+        projectId = getIntent().getIntExtra("project_id", -1);
+        model = new TaskModel(this);
+
+        // Toolbar với nút back
+        MaterialToolbar tb = findViewById(R.id.toolbar);
+        tb.setNavigationOnClickListener(v -> onBackPressed());
+
+        // RecyclerView
+        RecyclerView rv = findViewById(R.id.rvProjectTasks);
         adapter = new CardTaskAdapter();
-        rv.setLayoutManager(new GridLayoutManager(this, 2)); // 2 cột theo yêu cầu UI
+        rv.setLayoutManager(new GridLayoutManager(this, 2));
         rv.setAdapter(adapter);
-        tvProjectDeadline = findViewById(R.id.tvProjectDeadline);
-        tvProgressCount = findViewById(R.id.tvProgressCount);
-        pbTasks = findViewById(R.id.pbProjectTasks);
-        btnTask = findViewById(R.id.btnProjTabTask);
-        btnProcess = findViewById(R.id.btnProjTabProcess);
-        btnCompleted = findViewById(R.id.btnProjTabCompleted);
-        btnInform = findViewById(R.id.btnProjTabInform);
+
+        // Tabs (id theo XML bạn đang dùng)
+        tab1 = findViewById(R.id.btnProjTabTask);
+        tab2 = findViewById(R.id.btnProjTabProcess);
+        tab3 = findViewById(R.id.btnProjTabCompleted);
+        tab4 = findViewById(R.id.btnProjTabInform);
+
+        // Đặt text cho tabs (phòng khi text trong XML chưa đúng)
+        tab1.setText(TAB_TITLES[0]);
+        tab2.setText(TAB_TITLES[1]);
+        tab3.setText(TAB_TITLES[2]);
+        tab4.setText(TAB_TITLES[3]);
+
         setupPillTabs();
+
+        // Click item mở TaskActivity
         adapter.setOnTaskClickListener(task -> {
-            // TODO BACKEND: Mở TaskActivity, truyền id để fetch chi tiết /task/{id}
             Intent i = new Intent(ProjectTaskListActivity.this, TaskActivity.class);
             i.putExtra("task_id", task.getId());
-            i.putExtra("task_title", task.getTitle());
-            i.putExtra("task_status", task.getStatus() != null ? task.getStatus().name() : "");
-            if (task.getProject() != null) {
-                i.putExtra("project_id", task.getProject().getId());
-                i.putExtra("project_name", task.getProject().getName());
-            }
-            if (task.getCreatedBy() != null) {
-                i.putExtra("owner_name", task.getCreatedBy().getDisplayName());
-            }
-            if (task.getAssignees() != null && !task.getAssignees().isEmpty()) {
-                ArrayList<String> names = new ArrayList<>();
-                for (com.fpt.myapplication.dto.response.UserResponse u : task.getAssignees()) names.add(u.getDisplayName());
-                i.putExtra("assignee_names", names);
-            }
+            i.putExtra("project_id" , projectId);
             startActivity(i);
         });
-        viewModel = new ViewModelProvider(this).get(ProjectTaskListViewModel.class);
-        viewModel.tasks.observe(this, tasks -> {
-            allTasks = tasks != null ? tasks : new java.util.ArrayList<>();
-            updateProgress();
-            applyFilter(getSelectedTabIndex()); // TODO BACKEND: Có thể optimize bằng LiveData transform
-        });
-        viewModel.error.observe(this, err -> {
-            if (err != null) {
-                Toast.makeText(this, err, Toast.LENGTH_SHORT).show(); // TODO BACKEND: Map lỗi cho user
-            }
-        });
-        if (projectId != -1) viewModel.fetchForProject(projectId); // TODO BACKEND: /task/project/{projectId}
-        findViewById(R.id.fabAddProjectTask).setOnClickListener(v -> {
-            if (projectId == -1) return; // bảo vệ
-            new AddTaskBottomSheet().setOnTaskCreated((title, desc, dueDateIso) -> {
-                // TODO BACKEND: Convert dueDateIso -> đúng format BE (đang yyyy/MM/dd)
-                viewModel.createTask(title, desc, dueDateIso, projectId); // /task/create
-            }).show(getSupportFragmentManager(), "addProjectTask");
-        });
-        // TODO BACKEND: Set deadline dự án nếu có trường deadline ở ProjectResponse
-        tvProjectDeadline.setText("Deadline -");
+
+
+        findViewById(R.id.fabAddProjectTask).setOnClickListener(v ->{
+            Intent i = new Intent(ProjectTaskListActivity.this, CreateTaskActivity.class);
+            i.putExtra("project_id", projectId);
+            startActivity(i);
+        }
+
+        );
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        fetchData();
+    }
+
+    private void fetchData() {
+        model.getAllTaskForProject(projectId, new TaskModel.GetAllTaskForProjectCallBack() {
+            @Override
+            public void onLoading() {
+                // TODO: hiển thị loading nếu cần
+            }
+
+            @Override
+            public void onSuccess(List<TaskResponse> data) {
+                Log.d("ProjectTaskList", "Fetch tasks success: " + (data != null ? data.size() : 0));
+                allTasks.clear();
+                if (data != null) allTasks.addAll(data);
+                applyFilter(selectedTabIndex);
+            }
+
+            @Override
+            public void onError(ResponseError error) {
+                String msg = error != null && error.message != null ? error.message : "Lỗi tải danh sách công việc";
+                Toast.makeText(ProjectTaskListActivity.this, msg, Toast.LENGTH_SHORT).show();
+                adapter.submitList(new ArrayList<>());
+            }
+        });
+    }
+
+    // ------------------------- Tabs & Filter -------------------------
+
     private void setupPillTabs() {
-        btnTask.setOnClickListener(v -> selectTab(0));
-        btnProcess.setOnClickListener(v -> selectTab(1));
-        btnCompleted.setOnClickListener(v -> selectTab(2));
-        btnInform.setOnClickListener(v -> selectTab(3));
+        tab1.setOnClickListener(v -> selectTab(0)); // Cần làm (TODO)
+        tab2.setOnClickListener(v -> selectTab(1)); // Đang làm (IN_PROGRESS)
+        tab3.setOnClickListener(v -> selectTab(2)); // Nhận xét (IN_REVIEW)
+        tab4.setOnClickListener(v -> selectTab(3)); // Hoàn thành (DONE)
+
+        // Mặc định mở Tab 1 = To Do
         selectTab(0);
     }
 
     private void selectTab(int index) {
-        resetTab(btnTask); resetTab(btnProcess); resetTab(btnCompleted); resetTab(btnInform);
-        TextView target;
+        selectedTabIndex = index;
+
+        resetTab(tab1);
+        resetTab(tab2);
+        resetTab(tab3);
+        resetTab(tab4);
+
+        TextView target = tab1;
         switch (index) {
-            case 0: target = btnTask; break;
-            case 1: target = btnProcess; break;
-            case 2: target = btnCompleted; break;
-            case 3: target = btnInform; break;
-            default: target = btnTask;
+            case 1: target = tab2; break;
+            case 2: target = tab3; break;
+            case 3: target = tab4; break;
+            default: target = tab1; break;
         }
         setActiveTab(target);
-        applyFilter(index); // TODO BACKEND: Filter trên client; có thể thay bằng gọi API theo trạng thái nếu muốn
-    }
-
-    private int getSelectedTabIndex() {
-        if (btnTask.getBackground().getConstantState() == getResources().getDrawable(R.drawable.bg_tab_active).getConstantState()) return 0;
-        if (btnProcess.getBackground().getConstantState() == getResources().getDrawable(R.drawable.bg_tab_active).getConstantState()) return 1;
-        if (btnCompleted.getBackground().getConstantState() == getResources().getDrawable(R.drawable.bg_tab_active).getConstantState()) return 2;
-        if (btnInform.getBackground().getConstantState() == getResources().getDrawable(R.drawable.bg_tab_active).getConstantState()) return 3;
-        return 0;
+        applyFilter(index);
     }
 
     private void resetTab(TextView tv) {
         tv.setBackgroundResource(R.drawable.bg_tab_inactive);
-        tv.setTextColor(getResources().getColor(R.color.md_primary));
+        tv.setTextColor(ContextCompat.getColor(this, R.color.md_primary));
     }
 
     private void setActiveTab(TextView tv) {
         tv.setBackgroundResource(R.drawable.bg_tab_active);
-        tv.setTextColor(getResources().getColor(android.R.color.white));
-    }
-
-    private void updateProgress() {
-        // TODO BACKEND: Tính done dựa trên status DONE
-        int total = allTasks.size();
-        long done = allTasks.stream().filter(t -> t.getStatus() != null && t.getStatus().name().equals("DONE")).count();
-        tvProgressCount.setText(done + "/" + total); // TODO BACKEND: Có thể đổi sang getString(R.string.progress_count, done, total)
-        int percent = total == 0 ? 0 : (int) ((done * 100f) / total);
-        pbTasks.setProgress(percent); // TODO BACKEND: Nếu muốn animate -> dùng ObjectAnimator
+        tv.setTextColor(ContextCompat.getColor(this, android.R.color.white));
     }
 
     private void applyFilter(int pos) {
-        if (allTasks == null) { adapter.submitList(new ArrayList<>()); return; }
-        String target = null;
-        switch (pos) {
-            case 0: target = "TODO"; break; // TODO BACKEND: Map với TaskStatus.TODO
-            case 1: target = "IN_PROGRESS"; break;
-            case 2: target = "DONE"; break;
-            case 3: adapter.submitList(allTasks); return; // Inform tab hiển thị tất cả
+        if (allTasks.isEmpty()) {
+            adapter.submitList(new ArrayList<>());
+            return;
         }
-        if (target == null) { adapter.submitList(allTasks); return; }
+
+        String targetEnumName = (pos >= 0 && pos < TAB_STATUS.length) ? TAB_STATUS[pos] : null;
+        if (targetEnumName == null) {
+            adapter.submitList(new ArrayList<>(allTasks));
+            return;
+        }
+
         List<TaskResponse> filtered = new ArrayList<>();
-        for (TaskResponse t : allTasks) if (t.getStatus() != null && t.getStatus().name().equals(target)) filtered.add(t);
+        for (TaskResponse t : allTasks) {
+            if (t != null && t.getStatus() != null) {
+                String name = t.getStatus().name();
+                if (targetEnumName.equals(name)) {
+                    filtered.add(t);
+                }
+            }
+        }
         adapter.submitList(filtered);
-        updateProgress(); // TODO BACKEND: Có thể tách progress theo tab (nếu muốn)
     }
 }

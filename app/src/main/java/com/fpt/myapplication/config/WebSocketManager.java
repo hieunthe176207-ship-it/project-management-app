@@ -51,6 +51,7 @@ public class WebSocketManager {
      * - Thiết bị thật → dùng IP LAN của PC (vd: 192.168.1.100)
      * Ví dụ backend Spring Boot expose endpoint /ws (thuần WS, không withSockJS) cho mobile.
      */
+
     private static final String WS_URL = "ws://10.0.2.2:8080/ws";
 
     /** Singleton instance */
@@ -151,7 +152,7 @@ public class WebSocketManager {
         stomp = Stomp.over(Stomp.ConnectionProvider.OKHTTP, WS_URL);
 
         // Header Authorization cho frame CONNECT
-        StompHeader authHeader = new StompHeader("Authorization", "Bearer" + jwtToken);
+        StompHeader authHeader = new StompHeader("Authorization", "Bearer " + jwtToken);
 
         // Lắng nghe vòng đời kết nối (OPENED / ERROR / CLOSED)
         stomp.lifecycle().subscribe(event -> {
@@ -276,10 +277,17 @@ public class WebSocketManager {
      */
     public void send(String destinationApp, String jsonBody) {
         if (!ensureConnected()) return;
-        stomp.send(destinationApp, jsonBody).subscribe(
-                () -> logD("send OK: dest=" + destinationApp),
-                t  -> logE("send error: " + t.getMessage(), t)
-        );
+        stomp.send(destinationApp, jsonBody)
+                .subscribe(
+                        () -> logD("send OK: " + destinationApp),
+                        err -> {
+                            // LỖI TRANSPORT (chưa kết nối, socket down, handshake fail…)
+                            logE("send error: " + err.getMessage(), err);
+                            for (MessageListener l : listeners) {
+                                l.onError("Không gửi được tin: " + err.getMessage());
+                            }
+                        }
+                );
     }
 
     // ====== TIỆN ÍCH NỘI BỘ ====================================================

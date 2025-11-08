@@ -3,9 +3,20 @@ package com.fpt.myapplication.dto.response;
 import com.fpt.myapplication.constant.TaskStatus;
 import com.google.gson.annotations.SerializedName;
 import java.util.Set;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TaskResponse {
     @SerializedName("id")
     private Integer id;
+
+    private String description;
 
     @SerializedName("title")
     private String title;
@@ -22,22 +33,6 @@ public class TaskResponse {
     @SerializedName("assignees")
     private Set<UserResponse> assignees;
 
-    public Integer getId() {
-        return id;
-    }
-    public String getTitle() {
-        return title;
-    }
-    public TaskStatus getStatus() {
-        return status;
-    }
-    public TaskProjectResponse getProject() {
-        return project;
-    }
-    public UserResponse getCreatedBy() {
-        return createdBy;
-    }
-    public Set<UserResponse> getAssignees() {
-        return assignees;
-    }
+    private String dueDate;
+
 }

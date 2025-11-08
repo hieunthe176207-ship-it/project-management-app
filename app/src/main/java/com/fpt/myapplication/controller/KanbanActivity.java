@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fpt.myapplication.R;
 import com.fpt.myapplication.api.TaskApi;
 import com.fpt.myapplication.config.ApiClient;
+import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.request.TaskUpdateStatusRequestDto;
 import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.response.UpdateTaskReponse;
@@ -23,12 +24,14 @@ import com.fpt.myapplication.model.ProjectModel;
 import com.fpt.myapplication.model.TaskStatus;
 import com.fpt.myapplication.util.CrossColumnDropZone;
 // import com.fpt.project.util.DragDropHelper; // <-- KHÔNG CẦN NỮA
+import com.fpt.myapplication.util.Util;
 import com.fpt.myapplication.view.adapter.KanbanDragDropAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -90,7 +93,7 @@ public class KanbanActivity extends AppCompatActivity implements
         rvInReviewTasks = findViewById(R.id.rv_in_review_tasks);
         rvDoneTasks = findViewById(R.id.rv_done_tasks);
 
-        taskApi = ApiClient.getClient().create(TaskApi.class);
+        taskApi = ApiClient.getRetrofit(this).create(TaskApi.class);
     }
 
     private void setupMaps() {
@@ -353,26 +356,12 @@ public class KanbanActivity extends AppCompatActivity implements
                     // ... bên trong hàm onResponse()
                 } else {
                     // ---- BẮT ĐẦU PHẦN DEBUG ----
-                    int errorCode = response.code(); // Lấy mã lỗi, ví dụ: 404, 500
-                    String errorBodyMessage = "";
-
-                    try {
-                        if (response.errorBody() != null) {
-                            // Đây là "vé vàng": Thông báo lỗi chi tiết từ server
-                            errorBodyMessage = response.errorBody().string();
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Không thể đọc errorBody", e);
-                    }
-
-                    Log.e(TAG, "--- LỖI API ---");
-                    Log.e(TAG, "Failed to update task status via API. Code: " + errorCode);
-                    Log.e(TAG, "Response Message: " + response.message()); // Ví dụ: "Not Found"
-                    Log.e(TAG, "Error Body: " + errorBodyMessage); // <-- QUAN TRỌNG NHẤT!
-                    Log.e(TAG, "--- KẾT THÚC LỖI API ---");
-
-                    // Hiển thị lỗi chi tiết hơn cho bạn
-                    Toast.makeText(KanbanActivity.this, "Lỗi: " + errorCode + ". Chi tiết: " + errorBodyMessage, Toast.LENGTH_LONG).show();
+                    ResponseError error = Util.parseError(response);
+                    new SweetAlertDialog(KanbanActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Thông báo")
+                            .setContentText(error.message)
+                            .setConfirmText("OK")
+                            .show();
 
                     // Revert the move
                     loadKanbanBoard();

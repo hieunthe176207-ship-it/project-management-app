@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.fpt.myapplication.R;
+import com.fpt.myapplication.controller.LoginActivity;
 import com.fpt.myapplication.controller.RegisterActivity;
 import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.response.UserResponse;
@@ -49,7 +50,7 @@ public class ProfileFragment extends Fragment {
     private TextInputLayout tilDisplayName;
 
     private UserModel userModel;
-    private MaterialButton btnSave;
+    private MaterialButton btnSave, btnLogout;
     private TextInputEditText etDisplayName;
     public ProfileFragment() { }
 
@@ -90,7 +91,9 @@ public class ProfileFragment extends Fragment {
         etDisplayName = view.findViewById(R.id.etDisplayName);
         btnSave = view.findViewById(R.id.btnSave);
         userModel = new UserModel(requireContext());
+        btnLogout = view.findViewById(R.id.btnLogout);
         UserResponse user = SessionPrefs.get(requireContext()).getUser();
+
 
         if (user != null) {
             tvTitle.setText("Profile: " + user.getDisplayName());
@@ -149,6 +152,22 @@ public class ProfileFragment extends Fragment {
                 }
             });
 
+        });
+
+        btnLogout.setOnClickListener(v -> {
+            new SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
+                    .setTitleText("Xác nhận đăng xuất")
+                    .setContentText("Bạn có chắc chắn muốn đăng xuất?")
+                    .setConfirmText("Đăng xuất")
+                    .setCancelText("Hủy")
+                    .showCancelButton(true)
+                    .setConfirmClickListener(sweetAlertDialog -> {
+                        sweetAlertDialog.dismissWithAnimation();
+                        SessionPrefs.get(requireContext()).clearAll();
+                        LoginActivity.startAsNewTask(requireContext());
+                    })
+                    .setCancelClickListener(SweetAlertDialog::dismissWithAnimation)
+                    .show();
         });
 
         btnPick.setOnClickListener(v -> pickImageLauncher.launch("image/*"));

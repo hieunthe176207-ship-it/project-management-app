@@ -19,15 +19,31 @@
         <!-- Phần nền trên -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
+
             <ImageView
                 android:id="@+id/imageBackground"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/bg"
-                />
+                android:src="@drawable/bg"/>
+
+            <!-- TextView trạng thái ở góc trên bên trái -->
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="10dp"
+                android:background="@drawable/bg_status_ongoing"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:text="Đang tiến hành"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
 
             <LinearLayout
                 android:id="@+id/memberGroup"
@@ -110,8 +126,7 @@
                     android:text="Trend Tag Mobile App"
                     android:textStyle="bold"
                     android:textSize="16sp"
-                    android:textColor="@color/black"
-                    />
+                    android:textColor="@color/black"/>
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipDeadline"
@@ -127,7 +142,7 @@
                     app:closeIconEnabled="false"
                     app:textStartPadding="12dp"
                     android:layout_marginTop="5dp"
-                    app:textEndPadding="12dp" />
+                    app:textEndPadding="12dp"/>
             </LinearLayout>
 
             <com.google.android.material.chip.Chip
@@ -146,7 +161,7 @@
                 app:closeIconEnabled="false"
                 app:iconStartPadding="0dp"
                 app:textStartPadding="8dp"
-                app:textEndPadding="8dp" />
+                app:textEndPadding="8dp"/>
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

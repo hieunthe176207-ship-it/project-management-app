@@ -14,6 +14,12 @@ import com.fpt.myapplication.R;
 import com.fpt.myapplication.constant.TaskStatus;
 import com.fpt.myapplication.dto.response.TaskResponse;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 public class CardTaskAdapter extends ListAdapter<TaskResponse, CardTaskAdapter.TaskViewHolder> {
 
     public interface OnTaskClickListener {
@@ -45,7 +51,7 @@ public class CardTaskAdapter extends ListAdapter<TaskResponse, CardTaskAdapter.T
     }
 
     class TaskViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvTitle, tvStatus, tvProject, tvDeadline;
+        private TextView tvTitle, tvStatus, tvProject, tvDeadline, tvOverdue;
 
         public TaskViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -53,18 +59,61 @@ public class CardTaskAdapter extends ListAdapter<TaskResponse, CardTaskAdapter.T
             tvStatus = itemView.findViewById(R.id.tv_status);
             tvProject = itemView.findViewById(R.id.tv_project);
             tvDeadline = itemView.findViewById(R.id.tv_deadline);
+            tvOverdue = itemView.findViewById(R.id.tv_overdue);
         }
 
         public void bind(TaskResponse task) {
             if (task == null) return;
             tvTitle.setText(task.getTitle());
-            tvDeadline.setText("Hạn: - ");
+            tvDeadline.setText("Hạn: " + task.getDueDate());
+
+            // Tính toán quá hạn
+            boolean isOverdue = isTaskOverdue(task.getDueDate());
+            if (isOverdue) {
+                tvOverdue.setVisibility(View.VISIBLE);
+            } else {
+                tvOverdue.setVisibility(View.GONE);
+            }
+
             if (task.getStatus() != null) {
                 applyStatusStyle(task.getStatus());
             } else {
                 applyStatusStyle(TaskStatus.TODO);
             }
             itemView.setOnClickListener(v -> { if (listener != null) listener.onTaskClick(task); });
+        }
+
+        private boolean isTaskOverdue(String dueDate) {
+            if (dueDate == null || dueDate.isEmpty()) {
+                return false;
+            }
+
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Date deadline = sdf.parse(dueDate);
+
+                if (deadline == null) {
+                    return false;
+                }
+
+                // Reset time để so sánh chỉ ngày
+                Calendar deadlineCal = Calendar.getInstance();
+                deadlineCal.setTime(deadline);
+                deadlineCal.set(Calendar.HOUR_OF_DAY, 0);
+                deadlineCal.set(Calendar.MINUTE, 0);
+                deadlineCal.set(Calendar.SECOND, 0);
+                deadlineCal.set(Calendar.MILLISECOND, 0);
+
+                Calendar currentCal = Calendar.getInstance();
+                currentCal.set(Calendar.HOUR_OF_DAY, 0);
+                currentCal.set(Calendar.MINUTE, 0);
+                currentCal.set(Calendar.SECOND, 0);
+                currentCal.set(Calendar.MILLISECOND, 0);
+
+                return deadlineCal.before(currentCal);
+            } catch (ParseException e) {
+                return false;
+            }
         }
 
         private void applyStatusStyle(TaskStatus status) {
@@ -107,6 +156,4 @@ public class CardTaskAdapter extends ListAdapter<TaskResponse, CardTaskAdapter.T
                             (oldItem.getStatus() != null && newItem.getStatus() != null && oldItem.getStatus().equals(newItem.getStatus())));
                 }
             };
-
-
 }

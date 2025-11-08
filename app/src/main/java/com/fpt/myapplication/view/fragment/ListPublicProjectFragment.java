@@ -44,7 +44,7 @@ public class ListPublicProjectFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.list_project_layout, container, false);
+        return inflater.inflate(R.layout.list_project_public_layout, container, false);
     }
 
     @Override
@@ -56,8 +56,6 @@ public class ListPublicProjectFragment extends Fragment {
         progress = view.findViewById(R.id.progress);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        DividerItemDecoration div = new DividerItemDecoration(getContext(), RecyclerView.VERTICAL);
-        rv.addItemDecoration(div);
         adapter = new ProjectAdapter();
         rv.setAdapter(adapter);
 

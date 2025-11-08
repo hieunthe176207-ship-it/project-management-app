@@ -13,11 +13,11 @@
         android:layout_height="5dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="12dp"
-       />
+        />
 
     <!-- Title -->
     <TextView
-        android:text="Create New Project"
+        android:text="Tạo dự án mới"
         android:textStyle="bold"
         android:textSize="20sp"
         android:textColor="#000000"
@@ -27,7 +27,7 @@
 
     <!-- Subtitle -->
     <TextView
-        android:text="Let’s Collaborate and Create exciting new project together!"
+        android:text="Hãy cùng hợp tác và tạo ra dự án mới đầy thú vị!"
         android:textSize="14sp"
         android:textColor="#9E9E9E"
         android:gravity="center"
@@ -38,7 +38,7 @@
 
     <!-- Name -->
     <com.google.android.material.textfield.TextInputLayout
-        android:hint="Name Project"
+        android:hint="Tên dự án"
         android:id="@+id/tilName"
         app:boxBackgroundMode="filled"
         app:boxBackgroundColor="#F2F2F7"
@@ -58,7 +58,7 @@
 
     <!-- Description -->
     <com.google.android.material.textfield.TextInputLayout
-        android:hint="Desc Project"
+        android:hint="Mô tả"
         app:boxBackgroundColor="#F2F2F7"
         app:boxCornerRadiusTopStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
@@ -137,7 +137,7 @@
             app:tint="#9E9E9E" />
 
         <TextView
-            android:text="Deadline"
+            android:text="Hạn chót"
             android:textColor="#9E9E9E"
             android:textSize="15sp"
             android:layout_marginStart="8dp"
@@ -166,7 +166,7 @@
     <!-- Create button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCreate"
-        android:text="Create Project"
+        android:text=" Tạo dự án"
         android:layout_marginTop="16dp"
         android:layout_width="match_parent"
         android:layout_height="52dp"

@@ -26,6 +26,9 @@
     <color name="md_error">#B3261E</color>
     <color name="md_onError">#FFFFFF</color>
 
+
+    <color name="bn_background">#F5F0FF</color>
+    <color name="fab_purple">#E7DBFF</color>
     <!-- Accent icon vàng (task icon) -->
     <color name="accent_yellow">#FFCD04</color>
     <color name="on_accent_yellow">#FFFFFF</color>
@@ -54,8 +57,8 @@
     <color name="status_todo_text">#8A4D00</color>
     <color name="status_in_progress_bg">#E5F0FF</color>
     <color name="status_in_progress_text">#004A99</color>
-    <color name="status_done_bg">#E5F6FF</color>
-    <color name="status_done_text">#005E6A</color>
+    <color name="status_done_text">#4CAF50</color>
+    <color name="status_done_bg">#E8F5E9</color>
     <color name="status_in_review_bg">#F3E5FF</color>
     <color name="status_in_review_text">#5A00A3</color>
 </resources>

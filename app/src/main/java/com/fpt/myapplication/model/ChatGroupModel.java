@@ -11,6 +11,7 @@ import com.fpt.myapplication.util.Util;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -30,6 +31,12 @@ public class ChatGroupModel {
     }
 
     public interface MarkGroupAsReadCallBack{
+        void onSuccess();
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
+    public interface UpdateGroupChatCallBack{
         void onSuccess();
         void onError(ResponseError error);
         void onLoading();
@@ -79,6 +86,29 @@ public class ChatGroupModel {
 
             @Override
             public void onFailure(Call<ResponseSuccess<Void>> call, Throwable t) {
+                // Handle failure
+            }
+        });
+    }
+
+    public void updateGroupChat(List<MultipartBody.Part> parts,int id , UpdateGroupChatCallBack cb) {
+        cb.onLoading();
+        // Implementation for updating group chat will go here
+        chatGroupApi.updateGroupChat(parts, id).enqueue(new Callback<ResponseSuccess>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
+                if (response.isSuccessful()) {
+                    cb.onSuccess();
+                    // Handle success
+                } else {
+                    ResponseError error = Util.parseError(response);
+                    // Handle error
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess> call, Throwable t) {
                 // Handle failure
             }
         });

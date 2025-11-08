@@ -1,0 +1,5 @@
+package com.fpt.myapplication.util;
+
+public enum NotificationType {
+    MESSAGE, PROJECT, TASK, REQUEST_JOIN, PROJECT_REMOVE, REQUEST_JOIN_APPROVED, REQUEST_JOIN_REJECTED, TASK_REMOVED
+}

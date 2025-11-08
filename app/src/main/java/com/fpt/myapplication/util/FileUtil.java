@@ -3,6 +3,7 @@ package com.fpt.myapplication.util;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,12 +15,12 @@ import okhttp3.RequestBody;
 
 public class FileUtil {
     private static final String BASE_URL = "http://10.0.2.2:8080";
+
     public static MultipartBody.Part uriToPart(String key, Uri uri, Context ctx) throws IOException {
         ContentResolver resolver = ctx.getContentResolver();
-        String mime = resolver.getType(uri);            // VD: image/jpeg
+        String mime = resolver.getType(uri);
         InputStream is = resolver.openInputStream(uri);
-        byte[] bytes = readAllBytes(is);                // function bên dưới
-
+        byte[] bytes = readAllBytes(is);
         RequestBody reqFile = RequestBody.create(bytes, MediaType.parse(mime));
         return MultipartBody.Part.createFormData(key, "avatar.jpg", reqFile);
     }
@@ -46,6 +47,7 @@ public class FileUtil {
         if(imagePath == null){
             return null;
         }
+        Log.d("FILE", "GetImageUrl: "+BASE_URL + imagePath);
         return BASE_URL + imagePath;
     }
 }

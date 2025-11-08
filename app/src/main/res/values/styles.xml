@@ -4,4 +4,10 @@
         <item name="android:textColor">@android:color/black</item>
         <item name="android:background">@android:color/white</item>
     </style>
+
+    <style name="Shape.FabRounded20" parent="ShapeAppearance.Material3.Corner.None">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item> <!-- vuông bo như mockup -->
+    </style>
+
 </resources>

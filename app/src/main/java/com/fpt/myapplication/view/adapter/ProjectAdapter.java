@@ -54,9 +54,21 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
         ProjectResponse project = data.get(position);
         holder.tvTitle.setText(project.getName());
         holder.chipDeadline.setText("Deadline: " + project.getDeadline());
+        holder.chipProgress.setText(project.getProgress());
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onClick(project);
         });
+
+        // Tự tính toán trạng thái quá hạn
+        boolean isLate = isProjectLate(project.getDeadline());
+
+        if(isLate){
+            holder.tvStatus.setText("Quá hạn");
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_status_overdue);
+        } else {
+            holder.tvStatus.setText("Đang tiến hành");
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_status_ongoing);
+        }
 
         Glide.with(holder.itemView).clear(holder.a1);
         Glide.with(holder.itemView).clear(holder.a2);
@@ -69,6 +81,7 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
         holder.a4.setVisibility(View.GONE);
         holder.tvCount.setVisibility(View.GONE);
         holder.overlayCount.setVisibility(View.GONE);
+
 
         List<UserResponse> members = project.getMembers();
         int n = members == null ? 0 : members.size();
@@ -104,8 +117,8 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
     }
 
     static class ProjectViewHolder extends RecyclerView.ViewHolder{
-        TextView tvTitle;
-        Chip chipDeadline;
+        TextView tvTitle, tvStatus;
+        Chip chipDeadline, chipProgress;
 
         CircleImageView a1,a2,a3,a4;
         TextView tvCount;
@@ -114,12 +127,14 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             chipDeadline = itemView.findViewById(R.id.chipDeadline);
+            chipProgress = itemView.findViewById(R.id.chipProgress);
             a1 = itemView.findViewById(R.id.memberAvatar1);
             a2 = itemView.findViewById(R.id.memberAvatar2);
             a3 = itemView.findViewById(R.id.memberAvatar3);
             a4 = itemView.findViewById(R.id.memberAvatar4);
             tvCount = itemView.findViewById(R.id.membersCount);
             overlayCount = itemView.findViewById(R.id.overlayCount);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
         }
     }
 
@@ -129,5 +144,36 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
                 .placeholder(R.drawable.default_avatar)
                 .error(R.drawable.default_avatar)
                 .into(target);
+    }
+    private boolean isProjectLate(String deadline) {
+        if (deadline == null || deadline.isEmpty()) {
+            return false;
+        }
+
+        try {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+            java.util.Date deadlineDate = sdf.parse(deadline);
+            java.util.Date currentDate = new java.util.Date();
+
+            // Reset time để so sánh chỉ ngày
+            java.util.Calendar deadlineCal = java.util.Calendar.getInstance();
+            deadlineCal.setTime(deadlineDate);
+            deadlineCal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            deadlineCal.set(java.util.Calendar.MINUTE, 0);
+            deadlineCal.set(java.util.Calendar.SECOND, 0);
+            deadlineCal.set(java.util.Calendar.MILLISECOND, 0);
+
+            java.util.Calendar currentCal = java.util.Calendar.getInstance();
+            currentCal.setTime(currentDate);
+            currentCal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            currentCal.set(java.util.Calendar.MINUTE, 0);
+            currentCal.set(java.util.Calendar.SECOND, 0);
+            currentCal.set(java.util.Calendar.MILLISECOND, 0);
+
+            return deadlineCal.before(currentCal);
+        } catch (java.text.ParseException e) {
+            Log.e("ProjectAdapter", "Error parsing deadline: " + deadline, e);
+            return false;
+        }
     }
 }

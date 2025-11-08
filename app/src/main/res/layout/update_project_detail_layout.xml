@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:layout_width="match_parent"
+    android:background="@color/white"
+    android:layout_height="wrap_content">
+
+    <!-- Handle bar -->
+    <View
+        android:layout_width="56dp"
+        android:layout_height="5dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="12dp"
+        />
+
+    <!-- Title -->
+    <TextView
+        android:text="Cập nhật dự án"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textColor="#000000"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
+
+    <!-- Subtitle -->
+    <TextView
+        android:text="Cập nhật thông tin dự án của bạn ngay bây giờ!"
+        android:textSize="14sp"
+        android:textColor="#9E9E9E"
+        android:gravity="center"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <!-- Name -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:hint="Tên dự án"
+        android:id="@+id/tilName"
+        app:boxBackgroundMode="filled"
+        app:boxBackgroundColor="#F2F2F7"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etName"
+            android:textColor="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Description -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:hint="Mô tả"
+        app:boxBackgroundColor="#F2F2F7"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_width="match_parent"
+        android:id="@+id/tilDesc"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etDesc"
+            android:minLines="3"
+            android:gravity="top"
+            android:textColor="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/tgVisibility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:singleSelection="true"
+        app:selectionRequired="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPublic"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Công khai"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:cornerRadius="16dp"
+            app:checkedIcon="@null"
+            app:backgroundTint="@color/seg_bg"
+            app:strokeColor="@color/seg_stroke"
+            app:strokeWidth="1dp"
+            android:textColor="@color/seg_text" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPrivate"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Riêng tư"
+            android:textAllCaps="false"
+            android:insetTop="0dp"
+            android:textSize="12sp"
+            android:insetBottom="0dp"
+            app:cornerRadius="16dp"
+            app:checkedIcon="@null"
+            app:backgroundTint="@color/seg_bg"
+            app:strokeColor="@color/seg_stroke"
+            app:strokeWidth="1dp"
+            android:textColor="@color/seg_text" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <!-- Deadline -->
+    <LinearLayout
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:src="@drawable/ic_calendar"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:tint="#9E9E9E" />
+
+        <TextView
+            android:text="Hạn chót"
+            android:textColor="#9E9E9E"
+            android:textSize="15sp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddDeadline"
+            android:text="Add"
+            android:insetTop="6dp"
+            android:insetBottom="6dp"
+            app:cornerRadius="20dp"
+            app:icon="@drawable/ic_add"
+            app:iconPadding="6dp"
+            app:iconGravity="textStart"
+            android:textAllCaps="false"
+            android:minHeight="0dp"
+            android:paddingHorizontal="14dp"
+            android:backgroundTint="#157AFF"
+            android:textColor="#FFFFFFFF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <!-- Create button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCreate"
+        android:text="Cập nhật dự án"
+        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        app:cornerRadius="16dp"
+        android:textStyle="bold"
+        android:textAllCaps="false"
+        android:backgroundTint="@color/md_primary"
+        android:textColor="#FFFFFFFF"/>
+
+</LinearLayout>

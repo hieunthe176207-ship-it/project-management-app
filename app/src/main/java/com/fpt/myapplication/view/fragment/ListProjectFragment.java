@@ -21,6 +21,7 @@ import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.response.ProjectResponse;
 import com.fpt.myapplication.model.ProjectModel;
 import com.fpt.myapplication.view.adapter.ProjectAdapter;
+import com.google.android.material.chip.Chip;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class ListProjectFragment extends Fragment {
     private ProjectAdapter adapter;
 
     private ProgressBar progress;
+
 
     public ListProjectFragment() {
     }
@@ -53,8 +55,7 @@ public class ListProjectFragment extends Fragment {
         progress = view.findViewById(R.id.progress);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        DividerItemDecoration div = new DividerItemDecoration(getContext(), RecyclerView.VERTICAL);
-        rv.addItemDecoration(div);
+
         adapter = new ProjectAdapter();
         rv.setAdapter(adapter);
 

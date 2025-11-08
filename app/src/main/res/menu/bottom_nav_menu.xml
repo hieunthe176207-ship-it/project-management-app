@@ -18,8 +18,8 @@
 
     <item
         android:id="@+id/nav_discussion"
-        android:icon="@drawable/ic_bell"
-        android:title="Thông báo" />
+        android:icon="@drawable/ic_menu"
+        android:title="Công việc của tôi" />
 
     <item
         android:id="@+id/nav_profile"

@@ -55,6 +55,11 @@
             android:name=".controller.KabanBoardActitvity"
             android:exported="false" />
 
+
+        <activity
+            android:name=".controller.UpdateChatGroupActivity"
+            android:exported="false" />
+
         <activity
             android:name=".controller.JoinRequestActivity"
             android:exported="false" />
@@ -63,6 +68,20 @@
             android:name=".controller.TaskActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".controller.SearchActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".controller.UpdateProjectActivity"
+            android:exported="false" />
+        <activity
+            android:name=".controller.CreateTaskActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".controller.NotificationsActivity"
+            android:exported="false" />
 
         <activity
             android:name=".controller.MainActivity"
