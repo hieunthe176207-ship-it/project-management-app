@@ -12,10 +12,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.widget.TextView;
+import android.content.Intent;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import com.fpt.myapplication.R;
 import com.fpt.myapplication.api.TaskApi;
+import com.fpt.myapplication.api.ProjectApi;
 import com.fpt.myapplication.config.ApiClient;
 import com.fpt.myapplication.dto.ResponseError;
+import com.fpt.myapplication.dto.response.ProjectResponse;
 import com.fpt.myapplication.dto.request.TaskUpdateStatusRequestDto;
 import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.response.UpdateTaskReponse;
@@ -49,8 +56,11 @@ public class KanbanActivity extends AppCompatActivity implements
     // private ItemTouchHelper todoItemTouchHelper, ...
 
     private TaskApi taskApi;
+    private ProjectApi projectApi;
     private Integer projectId;
     private ProjectModel projectModel;
+    private TextView tvGreeting, tvSubtitle;
+    private FloatingActionButton fabAddTask;
 
     private Map<RecyclerView, TaskStatus> recyclerViewToStatusMap;
     private Map<TaskStatus, KanbanDragDropAdapter> statusToAdapterMap;
@@ -84,6 +94,14 @@ public class KanbanActivity extends AppCompatActivity implements
         setupRecyclerViews();
         // setupDragAndDrop(); // <-- KHÔNG CẦN NỮA
         setupDropZones(); // Đây là phương thức thiết lập kéo thả chính
+        loadProjectInfo();
+        loadKanbanBoard();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Reload data when returning from CreateTaskActivity or TaskActivity
         loadKanbanBoard();
     }
 
@@ -93,7 +111,19 @@ public class KanbanActivity extends AppCompatActivity implements
         rvInReviewTasks = findViewById(R.id.rv_in_review_tasks);
         rvDoneTasks = findViewById(R.id.rv_done_tasks);
 
+        tvGreeting = findViewById(R.id.tvGreeting);
+        tvSubtitle = findViewById(R.id.tvSubtitle);
+        fabAddTask = findViewById(R.id.fab_add_task);
+
         taskApi = ApiClient.getRetrofit(this).create(TaskApi.class);
+        projectApi = ApiClient.getRetrofit(this).create(ProjectApi.class);
+
+        // Setup FAB click listener
+        fabAddTask.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CreateTaskActivity.class);
+            intent.putExtra("project_id", projectId);
+            startActivity(intent);
+        });
     }
 
     private void setupMaps() {
@@ -292,7 +322,10 @@ public class KanbanActivity extends AppCompatActivity implements
     // --- Implement KanbanDragDropAdapter.OnTaskActionListener ---
     @Override
     public void onTaskClick(UpdateTaskReponse task) {
-        Toast.makeText(this, "Clicked: " + task.getTitle(), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, TaskActivity.class);
+        intent.putExtra("task_id", task.getId().intValue());
+        intent.putExtra("project_id", projectId);
+        startActivity(intent);
     }
 
     /**
@@ -416,5 +449,33 @@ public class KanbanActivity extends AppCompatActivity implements
         if (kanbanBoard.getDoneTasks() != null) {
             doneAdapter.updateTasks(kanbanBoard.getDoneTasks());
         }
+    }
+
+    // ------------------------------
+    // Hiển thị tên dự án ở kanban header
+    // ------------------------------
+    private void loadProjectInfo() {
+        if (projectApi == null || tvGreeting == null) return;
+        Call<ResponseSuccess<ProjectResponse>> call = projectApi.getProjectById(projectId);
+        call.enqueue(new Callback<ResponseSuccess<ProjectResponse>>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess<ProjectResponse>> call,
+                                   Response<ResponseSuccess<ProjectResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ProjectResponse project = response.body().getData();
+                    if (project != null && tvGreeting != null) {
+                        tvGreeting.setText(project.getName());
+                        if (tvSubtitle != null) {
+                            tvSubtitle.setText("Kanban Board");
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess<ProjectResponse>> call, Throwable t) {
+                // Log failure or leave default header
+            }
+        });
     }
 }
