@@ -203,6 +203,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
     protected void onStart() {
         super.onStart();
         WebSocketManager.get().addListener(this);
+        ///topic/notify/message/1
         WebSocketManager.get().subscribeTopic("/topic/notify/message/" + user.getId());
         WebSocketManager.get().subscribeTopic("/topic/notify/" + user.getId());
         getCountMesssge();

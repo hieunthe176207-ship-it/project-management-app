@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.fpt.myapplication.R;
 import com.fpt.myapplication.dto.ResponseError;
+import com.fpt.myapplication.dto.ResponseSuccess;
 import com.fpt.myapplication.dto.response.ProjectResponse;
 import com.fpt.myapplication.model.ProjectModel;
 import com.fpt.myapplication.util.FileUtil;
@@ -125,9 +126,6 @@ public class ProjectDetailActivity extends AppCompatActivity {
             @Override
             public void onError(ResponseError error) {
                 Log.e("PROJECTDETAIL", "onError: " + error);
-                progress.setVisibility(View.GONE);
-
-
                 SweetAlertDialog dlg = new SweetAlertDialog(ProjectDetailActivity.this, SweetAlertDialog.ERROR_TYPE)
                         .setTitleText("Có lỗi xảy ra")
                         .setContentText(error.message)
@@ -249,7 +247,43 @@ public class ProjectDetailActivity extends AppCompatActivity {
                         .setCancelClickListener(SweetAlertDialog::dismissWithAnimation)
                         .setConfirmClickListener(d -> {
                             d.dismissWithAnimation();
-                            Toast.makeText(this, "Đã xoá dự án (demo)", Toast.LENGTH_SHORT).show();
+                            model.deleteProject(projectId, new ProjectModel.DeleteProjectCallBack() {
+                                @Override
+                                public void onSuccess(ResponseSuccess data) {
+                                    SweetAlertDialog dlg = new SweetAlertDialog(ProjectDetailActivity.this, SweetAlertDialog.SUCCESS_TYPE)
+                                            .setTitleText("Thông báo")
+                                            .setContentText("Xóa dự án thành công")
+                                            .setConfirmText("Quay lại trang chủ ")
+                                            .setConfirmClickListener(s -> {
+                                                s.dismissWithAnimation();
+                                                Intent i = new Intent(ProjectDetailActivity.this, HomeActivity.class);
+                                                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                startActivity(i);
+                                                finish();
+                                            });
+                                    dlg.setCancelable(false);
+                                    dlg.setCanceledOnTouchOutside(false);
+                                    dlg.show();
+                                }
+
+                                @Override
+
+                                public void onError(ResponseError error) {
+                                    progress.setVisibility(View.GONE);
+                                    overlay.setVisibility(View.GONE);
+                                    SweetAlertDialog dlg = new SweetAlertDialog(ProjectDetailActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                            .setTitleText("Thông báo")
+                                            .setContentText(error.message)
+                                            .setConfirmText("OK");
+                                    dlg.show();
+                                }
+
+                                @Override
+                                public void onLoading() {
+                                    progress.setVisibility(View.VISIBLE);
+                                    overlay.setVisibility(View.VISIBLE);
+                                }
+                            });
                         })
                         .show();
                 return true;
