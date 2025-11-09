@@ -216,6 +216,7 @@ public class ProjectDetailActivity extends AppCompatActivity {
 
     private void loadAvatar(String url, ImageView target) {
         Glide.with(target.getContext())
+                .asBitmap()
                 .load(FileUtil.GetImageUrl(url))
                 .placeholder(R.drawable.default_avatar)
                 .error(R.drawable.default_avatar)

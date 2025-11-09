@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,6 +33,7 @@ public class ChatGroupActivity extends AppCompatActivity implements WebSocketMan
     private ChatGroupModel chatGroupModel;
     private RecyclerView rvGroups;
     private ChatGroupAdapter adapter;
+    private ImageView ivBack;
 
     private View loadingOverlay;
     private CircularProgressIndicator progressBar;
@@ -43,11 +45,18 @@ public class ChatGroupActivity extends AppCompatActivity implements WebSocketMan
 
         chatGroupModel = new ChatGroupModel(this);
         rvGroups = findViewById(R.id.rvGroups);
+        ivBack = findViewById(R.id.ivBack);
         loadingOverlay = findViewById(R.id.loadingOverlay);
         progressBar = findViewById(R.id.progressBar);
+        
         adapter = new ChatGroupAdapter();
         rvGroups.setLayoutManager(new LinearLayoutManager(this));
         rvGroups.setAdapter(adapter);
+
+        // Xử lý click icon back
+        if (ivBack != null) {
+            ivBack.setOnClickListener(v -> finish());
+        }
 
         adapter.setOnGroupClickListener(group -> {
             int groupId = group.getId(); // hoặc group.id nếu là public field
