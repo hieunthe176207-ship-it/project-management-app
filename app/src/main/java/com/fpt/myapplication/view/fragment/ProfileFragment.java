@@ -1,5 +1,6 @@
 package com.fpt.myapplication.view.fragment;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +23,7 @@ import com.fpt.myapplication.dto.ResponseError;
 import com.fpt.myapplication.dto.response.UserResponse;
 import com.fpt.myapplication.model.UserModel;
 import com.fpt.myapplication.util.FileUtil;
+import com.fpt.myapplication.util.OnProfileUpdated;
 import com.fpt.myapplication.util.SessionPrefs;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -41,6 +43,7 @@ import retrofit2.http.Multipart;
 
 public class ProfileFragment extends Fragment {
 
+    private OnProfileUpdated callback;
     private ActivityResultLauncher<String> pickImageLauncher;
     private CircleImageView imgAvatar;
     private Uri selectedAvatarUri = null;
@@ -118,7 +121,7 @@ public class ProfileFragment extends Fragment {
                     throw new RuntimeException(e);
                 }
             }
-            MultipartBody.Part namePart = FileUtil.stringToPart(name, "displayName");
+            MultipartBody.Part namePart = FileUtil.stringToPart( "displayName", name);
             parts.add(namePart);
             userModel.updateAccount(parts, new UserModel.UpdateAccountCallBack() {
                 @Override
@@ -138,6 +141,9 @@ public class ProfileFragment extends Fragment {
                     SessionPrefs.get(requireContext()).saveUser(response);
                     tvTitle.setText("Profile: " + response.getDisplayName());
                     tilDisplayName.setError(null);
+                    if (callback != null) {
+                        callback.onProfileUpdated(response.getDisplayName());
+                    }
                 }
 
                 @Override
@@ -172,5 +178,26 @@ public class ProfileFragment extends Fragment {
 
         btnPick.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
 
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        // Ưu tiên lấy từ Activity
+        if (context instanceof OnProfileUpdated) {
+            callback = (OnProfileUpdated) context;
+        } else {
+            // Nếu fragment này nằm trong một fragment cha implements callback
+            Fragment parent = getParentFragment();
+            if (parent instanceof OnProfileUpdated) {
+                callback = (OnProfileUpdated) parent;
+            }
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        callback = null; // tránh leak
     }
 }

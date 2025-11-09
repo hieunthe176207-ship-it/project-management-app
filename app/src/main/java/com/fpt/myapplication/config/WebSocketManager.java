@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,7 +49,6 @@ public class WebSocketManager {
      * URL WebSocket thuần (KHÔNG SockJS).
      * - Ví dụ: "wss://booking.realmreader.site/ws"
      */
-    private static final String WS_URL = "wss://booking.realmreader.site/ws";
 
     /** Singleton instance */
     private static WebSocketManager INSTANCE;
@@ -167,8 +167,10 @@ public class WebSocketManager {
         }
         this.lastJwt = jwtToken;
 
-        // Tạo STOMP client
-        stomp = Stomp.over(Stomp.ConnectionProvider.OKHTTP, WS_URL);
+        Map<String, String> httpHeaders = new HashMap<>();
+        httpHeaders.put("Authorization", "Bearer " + jwtToken);
+        stomp = Stomp.over(Stomp.ConnectionProvider.OKHTTP, Constant.SOCKET_URL, httpHeaders);
+
 
         // Heartbeat (nếu version lib hỗ trợ)
         try {

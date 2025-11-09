@@ -5,6 +5,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import com.fpt.myapplication.config.Constant;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +16,6 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 public class FileUtil {
-    private static final String BASE_URL = "https://booking.realmreader.site";
 
     public static MultipartBody.Part uriToPart(String key, Uri uri, Context ctx) throws IOException {
         ContentResolver resolver = ctx.getContentResolver();
@@ -47,7 +48,7 @@ public class FileUtil {
         if(imagePath == null){
             return null;
         }
-        Log.d("FILE", "GetImageUrl: "+BASE_URL + imagePath);
-        return BASE_URL + imagePath;
+        Log.d("FILE", "GetImageUrl: "+ Constant.BASE_URL + imagePath);
+        return Constant.BASE_URL + imagePath;
     }
 }

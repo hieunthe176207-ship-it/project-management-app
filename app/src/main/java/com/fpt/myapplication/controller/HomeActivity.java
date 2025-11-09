@@ -24,6 +24,7 @@ import com.fpt.myapplication.model.MessageModel;
 import com.fpt.myapplication.model.NotificationModel;
 import com.fpt.myapplication.model.ProjectModel;
 import com.fpt.myapplication.model.UserModel;
+import com.fpt.myapplication.util.OnProfileUpdated;
 import com.fpt.myapplication.util.SessionPrefs;
 import com.fpt.myapplication.view.bottomSheet.AddProjectBottomSheet;
 import com.fpt.myapplication.view.fragment.InfomationFragment;
@@ -44,7 +45,9 @@ import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-public class HomeActivity extends AppCompatActivity implements WebSocketManager.MessageListener {
+public class HomeActivity extends AppCompatActivity implements WebSocketManager.MessageListener , OnProfileUpdated {
+
+
 
     private ProjectModel model;
     private MessageModel messageModel;
@@ -57,7 +60,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
     private UserModel userModel;
     private NotificationModel notificationModel;
 
-    private TextView badge, badgeBell;
+    private TextView badge, badgeBell, tvGreeting;
 
     private UserResponse user;
 
@@ -99,7 +102,7 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setBackground(null);
-        TextView tvGreeting = findViewById(R.id.tvGreeting);
+        tvGreeting = findViewById(R.id.tvGreeting);
 
         badge = findViewById(R.id.badgeMessage);
         badgeBell = findViewById(R.id.badgeBell);
@@ -111,6 +114,8 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
         UserResponse user = SessionPrefs.get(this).getUser();
         model = new ProjectModel(this);
         tvGreeting.setText("Hi, "+user.getDisplayName());
+
+
         FloatingActionButton fab = findViewById(R.id.fab);
 
         btnMessage.setOnClickListener(
@@ -170,6 +175,12 @@ public class HomeActivity extends AppCompatActivity implements WebSocketManager.
 
 
 
+    }
+
+
+    @Override
+    public void onProfileUpdated(String newName) {
+        tvGreeting.setText("Hi, "+newName);
     }
 
     private void setCurrentFragment(@NonNull Fragment fragment, @NonNull String tag) {

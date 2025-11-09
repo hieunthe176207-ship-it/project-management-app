@@ -15,6 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public final class ApiClient {
 
     private static volatile Retrofit retrofit;
+
     private static final Object LOCK = new Object();
 
     private ApiClient() {}
@@ -39,7 +40,7 @@ public final class ApiClient {
                             .build();
 
                     retrofit = new Retrofit.Builder()
-                            .baseUrl("https://booking.realmreader.site/")
+                            .baseUrl(Constant.BASE_URL+"/")
                             .addConverterFactory(GsonConverterFactory.create())
                             .client(client)
                             .build();
