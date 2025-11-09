@@ -26,6 +26,7 @@ package com.fpt.myapplication.controller;
             import com.fpt.myapplication.dto.response.ChatGroupDetailResponse;
             import com.fpt.myapplication.dto.response.MessageResponse;
             import com.fpt.myapplication.dto.response.UserResponse;
+            import com.fpt.myapplication.model.ChatGroupModel;
             import com.fpt.myapplication.model.MessageModel;
             import com.fpt.myapplication.util.FileUtil;
             import com.fpt.myapplication.util.SessionPrefs;
@@ -50,6 +51,8 @@ package com.fpt.myapplication.controller;
                 private RecyclerView recyclerView;
                 private MessageAdapter adapter;
                 private MessageModel messageModel;
+
+                private ChatGroupModel chatGroupModel;
                 private TextInputEditText edtMessage;
                 private MaterialButton btnSend;
                 private int groupId;
@@ -69,6 +72,7 @@ package com.fpt.myapplication.controller;
                     setSupportActionBar(toolbar);
                     toolbar.setNavigationOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
                     messageModel = new MessageModel(this);
+                    chatGroupModel = new ChatGroupModel(this);
                     adapter = new MessageAdapter();
 
                     user = SessionPrefs.get(this).getUser();
@@ -184,6 +188,23 @@ package com.fpt.myapplication.controller;
                     ws.addListener(this);
                     ws.subscribeTopic("/topic/group/"+groupId);
                     ws.subscribeTopic("/topic/error/"+user.getId());
+
+                    chatGroupModel.markGroupAsRead(groupId, new ChatGroupModel.MarkGroupAsReadCallBack() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onError(ResponseError error) {
+
+                        }
+
+                        @Override
+                        public void onLoading() {
+
+                        }
+                    });
                 }
 
                 @Override

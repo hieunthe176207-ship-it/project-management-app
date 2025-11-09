@@ -54,27 +54,6 @@ public class ChatGroupActivity extends AppCompatActivity implements WebSocketMan
             Intent i = new Intent(ChatGroupActivity.this, ChatActivity.class);
             i.putExtra("id", groupId);
             startActivity(i);
-
-            group.setHasNew(false);
-            int pos = findIndexById(groupId);
-            if (pos >= 0) adapter.notifyItemChanged(pos);
-
-            chatGroupModel.markGroupAsRead(groupId, new ChatGroupModel.MarkGroupAsReadCallBack() {
-                @Override
-                public void onSuccess() {
-
-                }
-
-                @Override
-                public void onError(ResponseError error) {
-
-                }
-
-                @Override
-                public void onLoading() {
-
-                }
-            });
         });
 
 
