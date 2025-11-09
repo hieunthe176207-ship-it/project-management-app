@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="14dp">
+        android:padding="10dp">
 
         <!-- Header với drag handle -->
         <RelativeLayout
@@ -23,22 +23,24 @@
                 android:id="@+id/tv_task_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="32dp"
+                android:layout_marginEnd="28dp"
                 android:text="Task Title"
                 android:textColor="#222222"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:maxLines="2"
+                android:ellipsize="end" />
 
             <ImageView
                 android:id="@+id/iv_drag_handle"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_drag_handle"
-                android:tint="#666666"
+                app:tint="#666666"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="4dp" />
+                android:padding="2dp" />
 
         </RelativeLayout>
 
@@ -47,26 +49,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:maxLines="3"
+            android:maxLines="2"
             android:ellipsize="end"
             android:text="Task Description"
             android:textColor="#444444"
-            android:textSize="14sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/tv_task_due_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
             android:text="Due: 2024-01-15"
-            android:textSize="12sp"
-            android:textColor="#E53935" /> <!-- Màu đỏ dịu cho hạn -->
+            android:textSize="11sp"
+            android:textColor="#E53935" />
 
         <LinearLayout
             android:id="@+id/ll_assignees"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
             android:orientation="horizontal">
 
             <TextView
@@ -74,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:text="Assignees: "
                 android:textColor="#666666"
-                android:textSize="12sp" />
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/tv_assignees"
@@ -83,7 +85,9 @@
                 android:layout_weight="1"
                 android:text="John Doe"
                 android:textColor="#222222"
-                android:textSize="12sp" />
+                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
         </LinearLayout>
 

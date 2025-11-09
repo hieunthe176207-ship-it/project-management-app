@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -236,15 +237,23 @@ public class KanbanActivity extends AppCompatActivity implements
                 case DragEvent.ACTION_DROP:
                     dropZone.hideDropZone(); // Luôn ẩn khi thả
                     if (currentDraggedTask == null) {
+                        Log.w(TAG, "Drop action but no current dragged task");
                         return false;
                     }
 
                     KanbanDragDropAdapter sourceAdapter = statusToAdapterMap.get(currentDraggedFromStatus);
-                    if (sourceAdapter == null) return false;
+                    if (sourceAdapter == null) {
+                        Log.e(TAG, "Source adapter not found for status: " + currentDraggedFromStatus);
+                        return false;
+                    }
 
                     if (currentDraggedFromStatus == targetStatus) {
                         // ---- KỊCH BẢN 1: THẢ TRONG CÙNG 1 CỘT (SẮP XẾP) ----
                         int fromPosition = sourceAdapter.getTasks().indexOf(currentDraggedTask);
+                        if (fromPosition == -1) {
+                            Log.e(TAG, "Source task not found in adapter");
+                            return false;
+                        }
 
                         // Tìm vị trí 'to' dựa trên tọa độ Y
                         View viewUnder = targetRecyclerView.findChildViewUnder(event.getX(), event.getY());
@@ -252,11 +261,16 @@ public class KanbanActivity extends AppCompatActivity implements
                                 ? targetRecyclerView.getChildAdapterPosition(viewUnder)
                                 : targetAdapter.getItemCount(); // Thả ở cuối nếu không tìm thấy
 
-                        if(toPosition < 0) toPosition = targetAdapter.getItemCount();
-                        if(fromPosition == -1) return false; // Lỗi không tìm thấy task
+                        if (toPosition < 0) toPosition = targetAdapter.getItemCount();
 
                         if (fromPosition != toPosition) {
-                            targetAdapter.moveItem(fromPosition, toPosition);
+                            try {
+                                targetAdapter.moveItem(fromPosition, toPosition);
+                                Log.d(TAG, "Moved task within column from " + fromPosition + " to " + toPosition);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error moving item within column", e);
+                                return false;
+                            }
                         }
 
                     } else {
@@ -264,8 +278,9 @@ public class KanbanActivity extends AppCompatActivity implements
 
                         // 1. Xóa khỏi adapter nguồn
                         int sourcePosition = sourceAdapter.getTasks().indexOf(currentDraggedTask);
-                        if (sourcePosition != -1) {
-                            sourceAdapter.removeItem(sourcePosition);
+                        if (sourcePosition == -1) {
+                            Log.e(TAG, "Source task not found in source adapter");
+                            return false;
                         }
 
                         // 2. Tìm vị trí thả trong adapter đích
@@ -274,16 +289,26 @@ public class KanbanActivity extends AppCompatActivity implements
                                 ? targetRecyclerView.getChildAdapterPosition(viewUnder)
                                 : targetAdapter.getItemCount(); // Thả ở cuối
 
-                        if(targetPosition < 0) targetPosition = targetAdapter.getItemCount();
+                        if (targetPosition < 0) targetPosition = targetAdapter.getItemCount();
 
-                        // 3. Thêm vào adapter đích tại vị trí
-                        targetAdapter.addItem(currentDraggedTask, targetPosition);
+                        try {
+                            // 3. Xóa từ nguồn và thêm vào đích
+                            sourceAdapter.removeItem(sourcePosition);
+                            targetAdapter.addItem(currentDraggedTask, targetPosition);
 
-                        // 4. Cập nhật status cho model
-                        currentDraggedTask.setStatus(targetStatus);
+                            // 4. Cập nhật status cho model
+                            currentDraggedTask.setStatus(targetStatus);
 
-                        // 5. Gọi API
-                        updateTaskStatusViaApi(currentDraggedTask, targetStatus);
+                            // 5. Gọi API
+                            updateTaskStatusViaApi(currentDraggedTask, targetStatus);
+
+                            Log.d(TAG, "Moved task from " + currentDraggedFromStatus + " to " + targetStatus);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error moving task between columns", e);
+                            // Thử rollback nếu có thể
+                            loadKanbanBoard();
+                            return false;
+                        }
                     }
 
                     // Bất kể thả ở đâu, làm cho view gốc hiện lại
@@ -336,13 +361,27 @@ public class KanbanActivity extends AppCompatActivity implements
     public void onTaskStartDrag(UpdateTaskReponse task, View dragView) {
         // 1. Lưu lại task và cột nguồn
         currentDraggedTask = task;
-        RecyclerView sourceRecyclerView = (RecyclerView) dragView.getParent();
-        currentDraggedFromStatus = recyclerViewToStatusMap.get(sourceRecyclerView);
+
+        // Tìm RecyclerView parent một cách an toàn
+        android.view.ViewParent parent = dragView.getParent();
+        while (parent != null && !(parent instanceof RecyclerView)) {
+            if (parent instanceof View) {
+                parent = ((View) parent).getParent();
+            } else {
+                break;
+            }
+        }
+
+        if (parent instanceof RecyclerView) {
+            currentDraggedFromStatus = recyclerViewToStatusMap.get((RecyclerView) parent);
+        }
 
         if (currentDraggedFromStatus == null) {
             Log.e(TAG, "Không tìm thấy status cho RecyclerView nguồn");
             return;
         }
+
+        Log.d(TAG, "Start dragging task: " + task.getTitle() + " from " + currentDraggedFromStatus);
 
         // 2. Tạo ClipData (để mang dữ liệu)
         ClipData clipData = ClipData.newPlainText("TASK_DRAG", task.getTitle());
@@ -352,14 +391,22 @@ public class KanbanActivity extends AppCompatActivity implements
 
         // 4. Bắt đầu kéo thả chuẩn của hệ thống
         // Chúng ta truyền 'dragView' làm 'localState' để có thể lấy lại sau này
+        boolean startResult;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            dragView.startDragAndDrop(clipData, shadowBuilder, dragView, 0);
+            startResult = dragView.startDragAndDrop(clipData, shadowBuilder, dragView, 0);
         } else {
-            dragView.startDrag(clipData, shadowBuilder, dragView, 0);
+            startResult = dragView.startDrag(clipData, shadowBuilder, dragView, 0);
         }
 
-        // 5. Ẩn view gốc đi
-        dragView.setVisibility(View.INVISIBLE);
+        if (startResult) {
+            // 5. Ẩn view gốc đi chỉ khi bắt đầu kéo thành công
+            dragView.setVisibility(View.INVISIBLE);
+        } else {
+            Log.e(TAG, "Failed to start drag operation");
+            // Reset trạng thái nếu không thể bắt đầu kéo
+            currentDraggedTask = null;
+            currentDraggedFromStatus = null;
+        }
     }
 
     // PHƯƠNG THỨC CŨ (có thể xóa hoặc giữ lại để gọi API)

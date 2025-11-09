@@ -2,6 +2,7 @@ package com.fpt.myapplication.controller;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -127,6 +128,7 @@ public class TaskActivity extends AppCompatActivity {
             model.updateSubTaskCompleted(item.getId(), requested, new TaskModel.UpdateSubTaskCompletedCallBack() {
                 @Override
                 public void onSuccess() {
+
                     // Lấy lại vị trí hiện tại của holder để tránh vị trí cũ bị recycle
                     int pos = holder.getBindingAdapterPosition();
                     if (pos == RecyclerView.NO_POSITION) return;
@@ -184,6 +186,7 @@ public class TaskActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(TaskDetailResponse data) {
+                Log.d("TASK_INF", "onSuccess: "+"data");
                 currentTaskDetail = data;
                 showLoading(false);
                 if (data == null) {

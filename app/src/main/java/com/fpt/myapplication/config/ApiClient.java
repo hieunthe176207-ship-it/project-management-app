@@ -39,7 +39,7 @@ public final class ApiClient {
                             .build();
 
                     retrofit = new Retrofit.Builder()
-                            .baseUrl("http://10.0.2.2:8080/")
+                            .baseUrl("https://booking.realmreader.site/")
                             .addConverterFactory(GsonConverterFactory.create())
                             .client(client)
                             .build();

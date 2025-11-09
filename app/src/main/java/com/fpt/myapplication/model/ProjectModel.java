@@ -108,6 +108,12 @@ public class ProjectModel {
         void onLoading();
     }
 
+    public interface DeleteProjectCallBack{
+        void onSuccess(ResponseSuccess data);
+        void onError(ResponseError error);
+        void onLoading();
+    }
+
 
     public void createApi (ProjectCreateRequest body, CreateProjectCallBack cb){
         cb.onLoading();
@@ -380,6 +386,28 @@ public class ProjectModel {
     public void updateProject (int projectId, UpdateProjectRequest body, UpdateProjectCallBack cb){
         cb.onLoading();
         projectApi.updateProject(projectId, body).enqueue(new Callback<ResponseSuccess>() {
+            @Override
+            public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
+                if(response.isSuccessful()){
+                    ResponseSuccess data = response.body();
+                    cb.onSuccess(data);
+                }
+                else{
+                    ResponseError error = Util.parseError(response);
+                    cb.onError(error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseSuccess> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    public void deleteProject (int projectId, DeleteProjectCallBack cb){
+        cb.onLoading();
+        projectApi.deleteProject(projectId).enqueue(new Callback<ResponseSuccess>() {
             @Override
             public void onResponse(Call<ResponseSuccess> call, Response<ResponseSuccess> response) {
                 if(response.isSuccessful()){

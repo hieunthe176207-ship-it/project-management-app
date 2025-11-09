@@ -14,7 +14,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 public class FileUtil {
-    private static final String BASE_URL = "http://10.0.2.2:8080";
+    private static final String BASE_URL = "https://booking.realmreader.site";
 
     public static MultipartBody.Part uriToPart(String key, Uri uri, Context ctx) throws IOException {
         ContentResolver resolver = ctx.getContentResolver();

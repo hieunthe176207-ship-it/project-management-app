@@ -3,37 +3,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/background_kanban_board">
 
     <!-- Header -->
     <include layout="@layout/view_header_bar" />
 
-    <!-- Kanban Board -->
-    <HorizontalScrollView
+    <!-- Kanban Board Grid (2x2) -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:scrollbars="horizontal">
+        android:orientation="vertical"
+        android:padding="12dp">
 
+        <!-- Top Row: TO DO & IN PROGRESS -->
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:padding="16dp">
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
 
             <!-- TO DO Column -->
             <FrameLayout
                 android:id="@+id/ll_todo_column"
-                android:layout_width="280dp"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="12dp">
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/column_background"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="10dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -42,14 +47,19 @@
                         android:padding="8dp"
                         android:text="TO DO"
                         android:textColor="@android:color/white"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:layout_marginBottom="8dp" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rv_todo_tasks"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="8dp" />
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:clipToPadding="false"
+                        android:paddingBottom="4dp"
+                        android:scrollbars="vertical" />
 
                 </LinearLayout>
 
@@ -58,16 +68,17 @@
             <!-- IN PROGRESS Column -->
             <FrameLayout
                 android:id="@+id/ll_in_progress_column"
-                android:layout_width="280dp"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="12dp">
+                android:layout_weight="1"
+                android:layout_marginStart="6dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/column_background"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="10dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -76,32 +87,48 @@
                         android:padding="8dp"
                         android:text="IN PROGRESS"
                         android:textColor="@android:color/white"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:layout_marginBottom="8dp" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rv_in_progress_tasks"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="8dp" />
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:clipToPadding="false"
+                        android:paddingBottom="4dp"
+                        android:scrollbars="vertical" />
 
                 </LinearLayout>
 
             </FrameLayout>
 
+        </LinearLayout>
+
+        <!-- Bottom Row: IN REVIEW & DONE -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
             <!-- IN REVIEW Column -->
             <FrameLayout
                 android:id="@+id/ll_in_review_column"
-                android:layout_width="280dp"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="12dp">
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/column_background"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="10dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -110,14 +137,19 @@
                         android:padding="8dp"
                         android:text="IN REVIEW"
                         android:textColor="@android:color/white"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:layout_marginBottom="8dp" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rv_in_review_tasks"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="8dp" />
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:clipToPadding="false"
+                        android:paddingBottom="4dp"
+                        android:scrollbars="vertical" />
 
                 </LinearLayout>
 
@@ -126,15 +158,17 @@
             <!-- DONE Column -->
             <FrameLayout
                 android:id="@+id/ll_done_column"
-                android:layout_width="280dp"
-                android:layout_height="match_parent">
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/column_background"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="10dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -143,21 +177,27 @@
                         android:padding="8dp"
                         android:text="DONE"
                         android:textColor="@android:color/white"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:layout_marginBottom="8dp" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rv_done_tasks"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="8dp" />
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:clipToPadding="false"
+                        android:paddingBottom="4dp"
+                        android:scrollbars="vertical" />
 
                 </LinearLayout>
 
             </FrameLayout>
 
         </LinearLayout>
-    </HorizontalScrollView>
+
+    </LinearLayout>
 
     <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton

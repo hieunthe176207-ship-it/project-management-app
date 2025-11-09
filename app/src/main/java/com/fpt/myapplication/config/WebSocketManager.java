@@ -52,7 +52,7 @@ public class WebSocketManager {
      * Ví dụ backend Spring Boot expose endpoint /ws (thuần WS, không withSockJS) cho mobile.
      */
 
-    private static final String WS_URL = "ws://10.0.2.2:8080/ws";
+    private static final String WS_URL = "wss://booking.realmreader.site/ws";
 
     /** Singleton instance */
     private static WebSocketManager INSTANCE;

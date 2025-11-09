@@ -62,4 +62,7 @@ public interface ProjectApi {
 
     @PUT("/project/update-project/{projectId}")
     Call<ResponseSuccess> updateProject(@Path("projectId") int projectId, @Body UpdateProjectRequest request);
+
+    @DELETE("/project/delete-project/{projectId}")
+    Call<ResponseSuccess> deleteProject(@Path("projectId") int projectId);
 }
