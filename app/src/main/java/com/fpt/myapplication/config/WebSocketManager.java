@@ -1,12 +1,9 @@
 package com.fpt.myapplication.config;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
-import com.fpt.myapplication.dto.request.ChatMessage;
-import com.google.gson.Gson;
-
-import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -19,39 +16,38 @@ import ua.naiksoftware.stomp.StompClient;
 import ua.naiksoftware.stomp.dto.StompHeader;
 import ua.naiksoftware.stomp.dto.StompMessage;
 
-
 /**
  * WebSocketManager
  * ----------------
  * - Giữ 1 kết nối STOMP duy nhất (Singleton) cho toàn app.
- * - Cho phép nhiều Activity/Fragment đăng ký làm "listener" để nhận:
- *   + Trạng thái kết nối (connected/disconnected/error)
- *   + Tin nhắn mới từ các topic đã subscribe
- * - Quản lý subscribe theo topic (subscribe/unsubscribe), tránh trùng lặp.
- * - Cung cấp API gửi tin tới server (ví dụ /app/chat).
+ * - Cho phép nhiều Activity/Fragment đăng ký làm "listener".
+ * - Quản lý subscribe theo topic, tránh trùng lặp + tự re-subscribe sau reconnect.
+ * - Auto-reconnect với exponential backoff + jitter, có heartbeat.
+ * - Hỗ trợ TokenProvider để refresh JWT trước mỗi lần reconnect.
  *
- * Sử dụng cơ bản:
- *  1) MainActivity: WebSocketManager.get().connect(jwtToken);
- *  2) ChatActivity:
- *     - onStart(): WebSocketManager.get().addListener(this); (implements MessageListener)
- *                  WebSocketManager.get().subscribeTopic("/topic/public");
- *     - onStop():  WebSocketManager.get().removeListener(this);
- *     - gửi tin:   WebSocketManager.get().sendToChat("hello");
- *  3) Khi sign-out hoặc muốn ngắt: WebSocketManager.get().disconnect();
+ * Cách dùng gợi ý:
+ *   WebSocketManager ws = WebSocketManager.get();
+ *   ws.setTokenProvider(() -> SessionPrefs.getJwt()); // nếu JWT có thể thay đổi
+ *   ws.connect(null); // truyền null để lấy từ TokenProvider
+ *   ws.subscribeTopic("/topic/public");
+ *
+ *   // Trong Activity/Fragment:
+ *   ws.addListener(listener);   // onStart()
+ *   ws.removeListener(listener);// onStop()
+ *
+ *   // Nếu muốn ngắt hẳn (sign out…):
+ *   ws.disconnect();
  */
 public class WebSocketManager {
 
-    // ====== CẤU HÌNH & TRẠNG THÁI CHUNG ======================================
+    // ================== CẤU HÌNH CHUNG ========================================
 
     private static final String TAG = "WebSocketManager";
 
     /**
      * URL WebSocket thuần (KHÔNG SockJS).
-     * - Emulator (Android Studio) → PC: 10.0.2.2
-     * - Thiết bị thật → dùng IP LAN của PC (vd: 192.168.1.100)
-     * Ví dụ backend Spring Boot expose endpoint /ws (thuần WS, không withSockJS) cho mobile.
+     * - Ví dụ: "wss://booking.realmreader.site/ws"
      */
-
     private static final String WS_URL = "wss://booking.realmreader.site/ws";
 
     /** Singleton instance */
@@ -63,21 +59,46 @@ public class WebSocketManager {
         return INSTANCE;
     }
 
+    // ================== TRẠNG THÁI & THÀNH PHẦN CHÍNH =========================
+
     /** STOMP client chạy trên OkHttp */
     private StompClient stomp;
 
-    /** Trạng thái kết nối hiện tại (đọc/ghi đa luồng) */
+    /** Cờ trạng thái kết nối */
     private volatile boolean connected = false;
 
-    /** Token được dùng lần connect gần nhất (để auto-reconnect nếu cần) */
+    /** Token dùng lần connect gần nhất (để reconnect) */
     private volatile String lastJwt = null;
 
-    // ====== QUẢN LÝ LISTENER & SUBSCRIPTION ==================================
+    /** Người dùng có chủ động gọi disconnect hay không */
+    private volatile boolean userInitiatedDisconnect = false;
+
+    /** Handler main thread để schedule reconnect */
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    // ================== RECONNECT CONFIG ======================================
+
+    private boolean autoReconnect = true;   // bật/tắt auto-reconnect
+    private int reconnectAttempts = 0;
+    private int maxReconnectAttempts = 10;  // có thể set Integer.MAX_VALUE
+    private long baseBackoffMs = 1_000L;    // 1s
+    private long maxBackoffMs  = 30_000L;   // 30s
+    private long jitterMs      = 500L;      // ±500ms
+
+    // ================== TOKEN PROVIDER (TÙY CHỌN) =============================
 
     /**
-     * Listener nhận sự kiện & tin nhắn đẩy về UI.
-     * Khuyến nghị: add/remove ở onStart()/onStop() của Activity/Fragment.
+     * Dùng khi JWT có thể hết hạn; mỗi lần reconnect sẽ xin token mới.
      */
+    public interface TokenProvider {
+        String getTokenOrNull();
+    }
+    private volatile TokenProvider tokenProvider = null;
+
+    public void setTokenProvider(TokenProvider p) { this.tokenProvider = p; }
+
+    // ================== LISTENER & SUBSCRIPTION ================================
+
     public interface MessageListener {
         void onConnected();
         void onDisconnected();
@@ -85,166 +106,178 @@ public class WebSocketManager {
         void onNewMessage(String topic, String payload);
     }
 
-    /** Tập listeners an toàn luồng (không crash khi thêm/xóa trong lúc phát sự kiện) */
+    /** Tập listeners an toàn luồng */
     private final Set<MessageListener> listeners = new CopyOnWriteArraySet<>();
 
-    /**
-     * Quản lý các subscription theo topic → Disposable.
-     * - Tránh subscribe cùng 1 topic nhiều lần (gây trùng tin).
-     * - Cho phép unsubscribe từng topic khi không cần nữa.
-     */
+    /** Map topic -> Disposable để quản lý subscribe/unsubscribe */
     private final Map<String, Disposable> topicSubscriptions = new ConcurrentHashMap<>();
 
-    /**
-     * Lưu "tin cuối" theo topic (tuỳ chọn) để khi màn hình mới mở có thể "replay".
-     * - Không bắt buộc. Bạn có thể bỏ nếu không cần.
-     */
+    /** “Ý định” subscribe: để re-subscribe sau reconnect */
+    private final Set<String> desiredTopics = new CopyOnWriteArraySet<>();
+
+    /** Lưu tin cuối theo topic (tuỳ chọn) để replay cho màn hình mới mở */
     private final Map<String, String> lastMessageByTopic = new ConcurrentHashMap<>();
 
-    // ====== CONSTRUCTOR PRIVATE ==============================================
+    // ================== CONSTRUCTOR ===========================================
 
-    private WebSocketManager() {
-        // private để ép dùng Singleton qua get()
-    }
+    private WebSocketManager() { /* ép dùng Singleton */ }
 
-    // ====== API CHO UI: LISTENER ==============================================
+    // ================== API: LISTENER ==========================================
 
-    /** Đăng ký nhận sự kiện/tin nhắn (gọi ở onStart()) */
     public void addListener(MessageListener l) {
         if (l != null) listeners.add(l);
     }
 
-    /** Gỡ đăng ký (gọi ở onStop()) */
     public void removeListener(MessageListener l) {
         if (l != null) listeners.remove(l);
     }
 
-    /** Kiểm tra đang kết nối chưa (UI có thể dùng để hiển thị trạng thái) */
     public boolean isConnected() {
         return connected;
     }
 
-    /**
-     * Phát lại "tin cuối" của 1 topic cho listener mới (tuỳ chọn).
-     * Dùng khi bạn muốn UI không trống trơn lúc vừa vào màn hình.
-     */
+    /** Phát lại “tin cuối” của 1 topic cho listener mới (tuỳ chọn) */
     public void replayLastFor(String topic, MessageListener l) {
         if (l == null || topic == null) return;
         String last = lastMessageByTopic.get(topic);
         if (last != null) l.onNewMessage(topic, last);
     }
 
-    // ====== KẾT NỐI / NGẮT KẾT NỐI ===========================================
+    // ================== API: KẾT NỐI / NGẮT KẾT NỐI ===========================
 
     /**
      * Mở kết nối STOMP.
-     * - Gắn header Authorization: Bearer <jwtToken> trong STOMP CONNECT frame.
-     * - Đăng ký lắng nghe lifecycle để phát sự kiện cho UI.
-     * - KHÔNG tự subscribe topic ở đây: để UI tự gọi subscribeTopic() topic cần thiết.
+     * - Ưu tiên jwtToken truyền vào; nếu null sẽ lấy từ TokenProvider (nếu có).
+     * - Thiết lập heartbeat nếu lib hỗ trợ.
+     * - Lắng nghe lifecycle; re-subscribe topic sau khi OPENED.
+     * - Auto-reconnect khi ERROR/CLOSED.
      */
     public synchronized void connect(String jwtToken) {
-        // Nếu đã connected, bỏ qua (tránh tạo kết nối mới)
         if (stomp != null && connected) return;
 
-        this.lastJwt = jwtToken; // lưu lại để tái kết nối nếu muốn
+        userInitiatedDisconnect = false; // đánh dấu không phải ngắt do user
 
-        // Tạo STOMP client dùng OkHttp
+        // Lấy token
+        if ((jwtToken == null || jwtToken.isEmpty()) && tokenProvider != null) {
+            jwtToken = tokenProvider.getTokenOrNull();
+        }
+        if (jwtToken == null || jwtToken.isEmpty()) {
+            logW("connect(): missing JWT");
+            return;
+        }
+        this.lastJwt = jwtToken;
+
+        // Tạo STOMP client
         stomp = Stomp.over(Stomp.ConnectionProvider.OKHTTP, WS_URL);
+
+        // Heartbeat (nếu version lib hỗ trợ)
+        try {
+            stomp.withClientHeartbeat(10_000);  // gửi ping mỗi 10s
+            stomp.withServerHeartbeat(10_000);  // kỳ vọng server ping về mỗi 10s
+        } catch (Throwable ignore) {
+            // Một số phiên bản không có API này
+        }
 
         // Header Authorization cho frame CONNECT
         StompHeader authHeader = new StompHeader("Authorization", "Bearer " + jwtToken);
 
-        // Lắng nghe vòng đời kết nối (OPENED / ERROR / CLOSED)
+        // Lắng nghe vòng đời
         stomp.lifecycle().subscribe(event -> {
             switch (event.getType()) {
                 case OPENED:
                     connected = true;
+                    reconnectAttempts = 0; // reset backoff
+                    logD("STOMP OPENED");
+                    resubscribeAll(); // re-subscribe lại các topic mong muốn
                     for (MessageListener l : listeners) l.onConnected();
                     break;
 
                 case ERROR:
+                    connected = false;
                     String err = (event.getException() != null)
                             ? event.getException().getMessage()
                             : "Unknown STOMP error";
                     logE("Lifecycle ERROR: " + err, event.getException());
                     for (MessageListener l : listeners) l.onError(err);
+                    scheduleReconnectIfNeeded();
                     break;
 
                 case CLOSED:
                     connected = false;
+                    logW("STOMP CLOSED");
                     for (MessageListener l : listeners) l.onDisconnected();
+                    scheduleReconnectIfNeeded();
                     break;
             }
         }, throwable -> {
-            // Lỗi đăng ký lifecycle (hiếm)
             String err = throwable.getMessage();
             logE("Lifecycle subscribe error: " + err, throwable);
             for (MessageListener l : listeners) l.onError("Lifecycle subscribe error: " + err);
+            scheduleReconnectIfNeeded();
         });
 
         // Thực hiện CONNECT
         stomp.connect(Collections.singletonList(authHeader));
-
-        stomp.topic("/topic/public").subscribe();
     }
 
     /**
-     * Ngắt kết nối STOMP.
-     * - Hủy toàn bộ subscription topic.
-     * - Đóng STOMP client.
-     * - Xoá trạng thái cục bộ liên quan đến kết nối.
+     * Ngắt kết nối hoàn toàn:
+     * - Hủy subscriptions hiện tại.
+     * - Đóng STOMP client và đặt cờ để ngăn auto-reconnect.
      */
     public synchronized void disconnect() {
-        // Hủy các topic đang subscribe
+        userInitiatedDisconnect = true;  // ngăn auto-reconnect
+        // Nếu muốn tắt auto-reconnect tạm thời khi disconnect:
+        // autoReconnect = false;
+
+        // Hủy các topic subscribe
         for (Disposable d : topicSubscriptions.values()) {
             if (d != null && !d.isDisposed()) d.dispose();
         }
         topicSubscriptions.clear();
 
-        // Đóng kết nối
+        // Đóng client
         if (stomp != null) {
-            stomp.disconnect();
+            try { stomp.disconnect(); } catch (Throwable ignore) {}
             stomp = null;
         }
         connected = false;
-
-        // Giữ lastJwt nếu bạn muốn reconnect sau này (tuỳ chiến lược)
-        // lastMessageByTopic vẫn giữ để màn hình mới vào còn "replay" nếu thích
     }
 
-    // ====== SUBSCRIBE / UNSUBSCRIBE THEO TOPIC =================================
+    // ================== API: SUBSCRIBE / UNSUBSCRIBE ===========================
 
     /**
-     * Subscribe 1 topic STOMP (ví dụ "/topic/public" hoặc "/user/queue/chat").
-     * - An toàn: không tạo trùng nếu đã subscribe trước đó.
-     * - Broadcast mọi tin nhắn tới toàn bộ listeners đang đăng ký.
+     * Subscribe 1 topic STOMP (ví dụ "/topic/public", "/user/queue/chat").
+     * - Lưu vào desiredTopics để re-subscribe sau reconnect.
+     * - Tránh subscribe trùng.
      */
     public synchronized void subscribeTopic(String topic) {
         if (topic == null || topic.isEmpty()) return;
-        if (stomp == null) {
-            logW("subscribeTopic: STOMP is null. Call connect() first.");
+
+        desiredTopics.add(topic); // lưu ý định
+
+        if (stomp == null || !connected) {
+            logW("subscribeTopic: not connected yet, will subscribe after reconnect: " + topic);
             return;
         }
         if (topicSubscriptions.containsKey(topic)) {
-            // Đã subscribe rồi → bỏ qua
+            // đã subscribe
             return;
         }
 
         Disposable sub = stomp.topic(topic).subscribe(
-                // onNext: nhận tin nhắn từ broker
+                // onNext
                 (StompMessage msg) -> {
                     String payload = msg.getPayload();
-                    // Lưu lại "tin cuối" của topic (tuỳ chọn)
-                    lastMessageByTopic.put(topic, payload);
-                    // Phát cho toàn bộ listeners đang có
+                    lastMessageByTopic.put(topic, payload); // tuỳ chọn
                     for (MessageListener l : listeners) l.onNewMessage(topic, payload);
                 },
-                // onError: lỗi subscription
+                // onError
                 (Throwable t) -> {
                     String err = t.getMessage();
                     logE("Subscribe error for " + topic + ": " + err, t);
-                    for (MessageListener l : listeners) l.onError("Subscribe error (" + topic + "): " + err);
-                    // Nếu muốn: auto-remove để có thể subscribe lại sau
+                    for (MessageListener l : listeners)
+                        l.onError("Subscribe error (" + topic + "): " + err);
                     topicSubscriptions.remove(topic);
                 }
         );
@@ -252,47 +285,90 @@ public class WebSocketManager {
         topicSubscriptions.put(topic, sub);
     }
 
-    /**
-     * Hủy subscribe 1 topic để tiết kiệm tài nguyên khi không còn cần.
-     */
+    /** Hủy subscribe 1 topic. */
     public synchronized void unsubscribeTopic(String topic) {
         if (topic == null) return;
+        desiredTopics.remove(topic);
         Disposable d = topicSubscriptions.remove(topic);
         if (d != null && !d.isDisposed()) d.dispose();
-        // Có thể giữ lastMessageByTopic nếu muốn replay lần sau; hoặc xoá:
+        // Có thể giữ lastMessageByTopic để replay sau, hoặc xoá nếu muốn:
         // lastMessageByTopic.remove(topic);
     }
 
-    // ====== GỬI TIN LÊN SERVER =================================================
+    // ================== API: GỬI TIN ==========================================
 
     /**
-     * Gửi tin nhắn "chat chung" tới server.
-     * - Bên Spring Boot: @MessageMapping("/chat") → đích STOMP là "/app/chat".
-     * - Server sau đó broadcast ra các topic (ví dụ "/topic/public").
-     */
-
-    /**
-     * Ví dụ: gửi tin tới 1 destination bất kỳ (linh hoạt hơn).
-     * - Dùng khi bạn có nhiều @MessageMapping khác nhau.
+     * Gửi payload JSON đến 1 destination STOMP ở "app" (ví dụ "/app/chat").
+     * Trên Spring: @MessageMapping("/chat") → "/app/chat"
      */
     public void send(String destinationApp, String jsonBody) {
         if (!ensureConnected()) return;
-        stomp.send(destinationApp, jsonBody)
-                .subscribe(
-                        () -> logD("send OK: " + destinationApp),
-                        err -> {
-                            // LỖI TRANSPORT (chưa kết nối, socket down, handshake fail…)
-                            logE("send error: " + err.getMessage(), err);
-                            for (MessageListener l : listeners) {
-                                l.onError("Không gửi được tin: " + err.getMessage());
-                            }
-                        }
-                );
+        stomp.send(destinationApp, jsonBody).subscribe(
+                () -> logD("send OK: " + destinationApp),
+                err -> {
+                    logE("send error: " + err.getMessage(), err);
+                    for (MessageListener l : listeners) {
+                        l.onError("Không gửi được tin: " + err.getMessage());
+                    }
+                }
+        );
     }
 
-    // ====== TIỆN ÍCH NỘI BỘ ====================================================
+    // ================== RECONNECT LOGIC =======================================
 
-    /** Đảm bảo đã kết nối trước khi gửi/subscribe; log cảnh báo nếu chưa. */
+    private synchronized void scheduleReconnectIfNeeded() {
+        if (!autoReconnect) return;
+        if (userInitiatedDisconnect) return;
+        if (connected) return;
+
+        // Refresh token nếu có
+        if (tokenProvider != null) {
+            String refreshed = tokenProvider.getTokenOrNull();
+            if (refreshed != null && !refreshed.isEmpty()) {
+                lastJwt = refreshed;
+            }
+        }
+
+        if (reconnectAttempts >= maxReconnectAttempts) {
+            logW("Reached max reconnect attempts. Stop retrying.");
+            return;
+        }
+        reconnectAttempts++;
+
+        long backoff = Math.min(
+                maxBackoffMs,
+                (long) (baseBackoffMs * Math.pow(2, reconnectAttempts - 1))
+        );
+        long jitter = (long) (Math.random() * (2 * jitterMs)) - jitterMs; // [-jitter, +jitter]
+        long delay = Math.max(0, backoff + jitter);
+
+        logW("Will try reconnect in ~" + delay + " ms (attempt " + reconnectAttempts + ")");
+        mainHandler.postDelayed(() -> {
+            if (!connected && !userInitiatedDisconnect) {
+                try {
+                    connect(lastJwt);
+                } catch (Throwable t) {
+                    logE("Reconnect attempt failed fast: " + t.getMessage(), t);
+                    scheduleReconnectIfNeeded();
+                }
+            }
+        }, delay);
+    }
+
+    private synchronized void resubscribeAll() {
+        for (String t : desiredTopics) {
+            if (!topicSubscriptions.containsKey(t)) {
+                try {
+                    subscribeTopic(t);
+                } catch (Throwable e) {
+                    logE("resubscribe fail: " + t, e);
+                }
+            }
+        }
+    }
+
+    // ================== TIỆN ÍCH NỘI BỘ =======================================
+
     private boolean ensureConnected() {
         if (stomp == null || !connected) {
             logW("Not connected. Call connect() first.");
@@ -301,23 +377,15 @@ public class WebSocketManager {
         return true;
     }
 
-    /** Escape đơn giản để tránh null/quote lỗi JSON thủ công (demo). */
-    private static String safe(String s) {
-        if (s == null) return "";
-        return s.replace("\"", "\\\"");
-    }
-
     private static void logD(String msg) { Log.d(TAG, msg); }
     private static void logW(String msg) { Log.w(TAG, msg); }
     private static void logE(String msg, Throwable t) { Log.e(TAG, msg, t); }
 
-    // ====== (TÙY CHỌN) TỰ ĐỘNG RECONNECT CƠ BẢN ===============================
-    // Nếu muốn tự reconnect khi CLOSED/ERROR, bạn có thể thêm logic sau:
-    // - Trong lifecycle CLOSED/ERROR: schedule reconnect (vd: new Handler().postDelayed(...))
-    // - Nhớ tránh reconnect dồn dập (backoff).
-    // - Ví dụ:
-    //   if (autoReconnect && lastJwt != null) {
-    //       new Handler(Looper.getMainLooper()).postDelayed(() -> connect(lastJwt), 2000);
-    //   }
-    // Triển khai tuỳ nhu cầu app của bạn.
+    // ================== TUỲ CHỈNH HÀNH VI (SETTER) =============================
+
+    public void setAutoReconnect(boolean autoReconnect) { this.autoReconnect = autoReconnect; }
+    public void setMaxReconnectAttempts(int maxReconnectAttempts) { this.maxReconnectAttempts = Math.max(1, maxReconnectAttempts); }
+    public void setBaseBackoffMs(long baseBackoffMs) { this.baseBackoffMs = Math.max(100L, baseBackoffMs); }
+    public void setMaxBackoffMs(long maxBackoffMs) { this.maxBackoffMs = Math.max(500L, maxBackoffMs); }
+    public void setJitterMs(long jitterMs) { this.jitterMs = Math.max(0L, jitterMs); }
 }
